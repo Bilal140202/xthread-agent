@@ -63,4 +63,7 @@ Legend: ✅ working · ⚠️ degraded/rate-limited · ❌ dead/blocked
 - UnrollNow candidate lists run ~5–11 IDs for single tweets, dominated by
   same-author recommendations in non-thread order.
 
-*Last verified: 2026-09-24.*
+*Last verified: 2026-09-24 (second pass, UTC — full pipeline E2E re-run:
+metadata-only walk+decode+reconstruct, photo download, video+poster download,
+and the fail-closed path for an unavailable root; all ✅ rows confirmed from
+the same datacenter IP class).*

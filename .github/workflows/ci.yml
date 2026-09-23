@@ -1,0 +1,84 @@
+# CI for xthread-agent — deterministic, offline, no network.
+#
+# The pipeline's live endpoints (unrollnow.com, api.fxtwitter.com,
+# api.vxtwitter.com, twimg CDN) are deliberately NEVER probed from CI:
+# CI must be deterministic, and politeness is a hard constraint of this
+# project (see PROJECT_CONTEXT.md §5.6). The offline suite covers the
+# full contract with synthetic fixtures; live verification is a manual
+# maintenance step documented in docs/endpoint-matrix.md.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.9 is the advertised floor (README / PROJECT_CONTEXT).
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Syntax check (byte-compile all sources)
+        run: python -m compileall -q xthread-agent.py mcp_server.py demo.py
+
+      - name: Validate bundled JSON Schema
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          schema = json.loads(Path("schema/thread-result.schema.json").read_text(encoding="utf-8"))
+          assert schema["$schema"].endswith("draft-07/schema#")
+          assert schema["properties"]["schema_version"]["const"] == "3.0"
+          for name in ("post", "metrics", "author", "media", "photo", "video", "error"):
+              assert name in schema["definitions"], f"missing definition: {name}"
+          print("schema OK:", schema["title"])
+          PY
+
+      - name: Offline test suite (fixtures only, no network)
+        run: python -m unittest discover -s tests -p "test_*.py" -v
+
+      - name: CLI smoke checks (offline paths)
+        run: |
+          python xthread-agent.py --version
+          # usage error path: exit 2, no positional argument
+          if python xthread-agent.py >/dev/null 2>&1; then
+            echo "FAIL: missing-argument run must not succeed" && exit 1
+          fi
+          # invalid-input path: non-X URL must fail closed with E_INVALID_INPUT
+          python xthread-agent.py "https://example.com/status/123" --no-download --json \
+            | grep -q E_INVALID_INPUT
+
+      - name: MCP server handshake probe (offline)
+        run: |
+          printf '%s\n%s\n' \
+            '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18"}}' \
+            '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+            | python mcp_server.py > /tmp/mcp_probe.out
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          lines = [json.loads(l) for l in
+                   Path("/tmp/mcp_probe.out").read_text(encoding="utf-8").splitlines()
+                   if l.strip()]
+          assert len(lines) == 2, f"expected 2 responses, got {len(lines)}"
+          assert lines[0]["result"]["serverInfo"]["name"] == "xthread-agent"
+          tools = [t["name"] for t in lines[1]["result"]["tools"]]
+          assert tools == ["extract_thread", "lookup_status",
+                           "read_manifest", "get_schema"], tools
+          print("MCP handshake OK:", tools)
+          PY

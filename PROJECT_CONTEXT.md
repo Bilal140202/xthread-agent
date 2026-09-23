@@ -47,7 +47,9 @@ DISCOVERY (unrollnow.com)  →  DECODE (api.fxtwitter.com, fallback
   four roles documented as contracts in `agents.md`. The single-file
   constraint is deliberate: an agent should be able to fetch ONE file and
   run it in a bare sandbox. Do not split it into a package without a very
-  good reason.
+  good reason. (The one sanctioned exception: `mcp_server.py`, a separate,
+  optional, stdlib-only wrapper for MCP hosts. It shells out to the core
+  CLI and deliberately implements no pipeline logic of its own.)
 
 ## 4. How it works (the 60-second version)
 
@@ -145,8 +147,8 @@ suspect endpoint with curl from the same IP class, update the matrix row.
 ## 9. How to test it
 
 ```bash
-# offline suite (89 tests, ~0.3s, no network)
-cd tests && python3 -m unittest discover -p "test_*.py" -v
+# offline suite (108 tests, ~1s, no network) — CI runs exactly this
+python3 -m unittest discover -s tests -p "test_*.py" -v
 
 # live smoke (polite: one thread, ideally one you control)
 python3 demo.py "https://x.com/<user>/status/<id>" --out /tmp/demo_out
@@ -165,11 +167,11 @@ reconstructs in order with `related_filtered` > 0; a deleted post yields
 - A second walker slot (e.g. threadreaderapp or syndication-based) so
   discovery is dual-homed like decoding.
 - Optional byte-range resume for very large videos.
-- An MCP wrapper exposing the CLI as a tool for MCP-compatible agents
-  (keep core stdlib-only; the wrapper can require deps).
 - Media type expansion: GIFs are mp4s already; polls/cards/communities are
   out of scope until a decoder exposes them cleanly.
 - A `--from-file` batch mode (still serialized, still polite).
+- MCP tools beyond the initial four (e.g. a `verify_endpoints` tool that
+  runs the endpoint-matrix maintenance protocol from inside an agent).
 
 ## 11. What remains unfinished / known debts
 
@@ -180,10 +182,17 @@ reconstructs in order with `related_filtered` > 0; a deleted post yields
   payloads (only downloads have a transfer deadline).
 - `decoded_tweets` counts ancestors cached during the ancestor walk —
   semantics are documented in the schema but could be split further.
-- No CI (GitHub Actions) yet — the suite is offline and fast; wiring it up
-  is a 10-line workflow.
 - v2→v3 consumers: any script reading the bare-array manifest must migrate
   to `.posts[]` (migration note in RELEASE_NOTES.md).
+- The MCP wrapper's `extract_thread` inherits the core CLI's per-run
+  politeness, but nothing in MCP itself rate-limits tool *calls* — a host
+  that fires parallel extract calls can still hammer the walk/decode
+  services. Serialize heavy harvests at the host level.
+
+CI note: `.github/workflows/ci.yml` (added v3.1.0) runs the offline suite,
+schema validation, CLI smoke checks, and an offline MCP handshake probe on
+Python 3.9–3.13 for every push/PR. CI never probes live endpoints — live
+re-verification stays a manual, matrix-protocol step.
 
 ## 12. Field-provenance note
 

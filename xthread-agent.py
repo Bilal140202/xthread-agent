@@ -47,7 +47,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-__version__ = "3.0.0"
+__version__ = "3.1.0"
 SCHEMA_VERSION = "3.0"
 
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "

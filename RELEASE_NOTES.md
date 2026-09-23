@@ -1,5 +1,53 @@
 # Release Notes
 
+## v3.1.0 — 2026-09-24
+
+The integration release: an MCP wrapper for MCP-compatible agent hosts and
+GitHub Actions CI. The core pipeline is untouched — no pipeline code changed,
+no schema changed (schema_version stays 3.0), no CLI contract changed.
+
+### Added
+
+- **`mcp_server.py` — MCP wrapper (stdlib-only).** Exposes the harvester as
+  MCP tools over the standard stdio transport (newline-delimited JSON-RPC
+  2.0; protocol versions 2024-11-05 / 2025-03-26 / 2025-06-18 — the server
+  echoes a supported client version, else advertises its latest):
+  `extract_thread` (full harvest), `lookup_status` (metadata-only),
+  `read_manifest` (returns an existing manifest; refuses any other
+  filename), `get_schema` (envelope JSON Schema). The wrapper shells out to
+  the CLI as a subprocess (argument list, never a shell) with hard timeouts
+  (120s lookups, 900s extracts, `XTHREAD_MCP_EXTRACT_TIMEOUT` to override)
+  and implements no pipeline logic of its own — the CLI contract remains the
+  single source of truth. Tool results distinguish invocation failures
+  (`isError: true`) from honest negative results (`isError: false` with
+  `envelope.status == "empty"`).
+- **`tests/test_mcp.py` — 19 offline MCP tests**: protocol handlers
+  (initialize version echo/fallback, ping, tools/list shape, notifications
+  stay silent, unknown methods), subprocess framing over stdio (parse
+  errors, sequential request/response pairing), and tool error paths
+  (invalid input fails before any network call, `read_manifest` filename
+  guard, missing files). Total suite: 89 → 108 tests.
+- **`.github/workflows/ci.yml` — GitHub Actions CI.** Python 3.9–3.13
+  matrix on push/PR/manual: byte-compile all sources, validate the bundled
+  JSON Schema, run the full offline suite, CLI smoke checks (usage-error
+  exit 2, invalid-input `E_INVALID_INPUT` fail-closed), and an offline MCP
+  handshake probe. CI deliberately never probes live endpoints — the
+  politeness constraint outranks CI coverage, and determinism is the point
+  (see PROJECT_CONTEXT.md §11).
+
+### Changed
+
+- `README.md`: CI badge, MCP server section, docs table entry, testing
+  section (root-based unittest discovery invocation, suite size).
+- `agent.md`: "Via MCP" section — how MCP clients run the server and read
+  tool results (the four tools, timeout/error semantics).
+- `PROJECT_CONTEXT.md`: single-file constraint now documents the sanctioned
+  MCP-wrapper exception; §11 debts updated (CI debt closed; new documented
+  residual: MCP hosts must serialize heavy harvests themselves).
+- `docs/endpoint-matrix.md`: all rows re-verified alive from a datacenter
+  IP on 2026-09-24 (UTC) — FixTweet, vxtwitter, UnrollNow, twimg CDN, plus
+  the fail-closed path for an unavailable root.
+
 ## v3.0.0 — 2026-09-24
 
 The reliability release: true thread reconstruction, a fallback decoder slot,

@@ -4,6 +4,7 @@
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/Bilal140202/xthread-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/Bilal140202/xthread-agent/actions/workflows/ci.yml)
 [![GitHub](https://img.shields.io/badge/GitHub-Bilal140202%2Fxthread--agent-black.svg)](https://github.com/Bilal140202/xthread-agent)
 [![stdlib only](https://img.shields.io/badge/dependencies-stdlib%20only-success.svg)](#requirements)
 
@@ -198,6 +199,29 @@ file can run this tool end-to-end without asking a human a single question.
 `agents.md` defines the role prompts each internal stage must conform to.
 `demo.py` is a minimal runnable example of programmatic consumption.
 
+### MCP server (Model Context Protocol)
+
+For MCP-compatible agent hosts (Claude Desktop, Zed, custom hosts),
+`mcp_server.py` exposes the harvester as tools over the standard stdio
+transport — still stdlib-only, still no login:
+
+```bash
+python3 mcp_server.py   # speaks MCP on stdin/stdout; logs on stderr
+```
+
+| Tool | What it does |
+|---|---|
+| `extract_thread` | Full harvest: thread reconstruction + media downloads; returns the envelope |
+| `lookup_status` | Metadata-only (`--no-download` equivalent): text, authors, timestamps, media URLs |
+| `read_manifest` | Returns an existing `thread_manifest.json` verbatim (refuses any other filename) |
+| `get_schema` | Returns the JSON Schema for the envelope contract |
+
+The server never reimplements the pipeline — each tool call shells out to
+`xthread-agent.py` as a subprocess with a hard timeout, so the CLI contract,
+schema, and politeness rules stay the single source of truth. Register it in
+your MCP client config as a stdio command, e.g.
+`{"command": "python3", "args": ["/path/to/mcp_server.py"]}`.
+
 ---
 
 ## Documentation
@@ -206,6 +230,7 @@ file can run this tool end-to-end without asking a human a single question.
 |---|---|
 | [`agent.md`](agent.md) | Agent entry point — how to run, the JSON contract, decision tree |
 | [`agents.md`](agents.md) | Role prompts for the internal agent roster (the spec) |
+| [`mcp_server.py`](mcp_server.py) | MCP wrapper — exposes the harvester as MCP tools over stdio (stdlib-only) |
 | [`demo.py`](demo.py) | Minimal end-to-end consumption example |
 | [`schema/thread-result.schema.json`](schema/thread-result.schema.json) | JSON Schema (draft-07) for the manifest envelope |
 | [`docs/research-blog.md`](docs/research-blog.md) | Research chronicle: the X lockdown and the bypass architecture |
@@ -237,16 +262,18 @@ file can run this tool end-to-end without asking a human a single question.
 ## Testing
 
 ```bash
-cd tests
-python3 -m unittest discover -p "test_*.py" -v      # 89 offline tests, ~0.3s
+python3 -m unittest discover -s tests -p "test_*.py" -v   # 108 offline tests, ~1s
 ```
 
 The suite covers URL normalization, the walker, both decoders (including the
 vxtwitter fallback and HTTP 404/451/429 paths), chain reconstruction, payload
-mapping, atomic downloads, the envelope contract, and CLI behavior — all
-against synthetic fixtures (no network). For a real end-to-end run, use
-`demo.py` against any public status URL of your choice; keep the request rate
-polite and test against content you control where possible.
+mapping, atomic downloads, the envelope contract, CLI behavior, and the MCP
+wrapper (protocol framing, tools, error paths) — all against synthetic
+fixtures (no network). CI (`.github/workflows/ci.yml`) runs the same suite on
+Python 3.9–3.13 on every push and PR; live endpoints are deliberately never
+probed from CI. For a real end-to-end run, use `demo.py` against any public
+status URL of your choice; keep the request rate polite and test against
+content you control where possible.
 
 ---
 

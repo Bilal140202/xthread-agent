@@ -77,6 +77,26 @@ Use this when you only need the thread's text, structure, and media URLs
 (no disk cost, faster). Local `file` fields are `null` and `downloaded` is
 `false`; `url` fields are always populated.
 
+### Via MCP (Model Context Protocol)
+
+If you are an MCP client, run `python3 mcp_server.py` as a stdio server
+(newline-delimited JSON-RPC 2.0; logs on stderr). It exposes four tools:
+
+- `extract_thread` {url, out_dir?, download_media?} — full harvest; returns
+  `{out_dir, manifest_path, summary, envelope}` where `envelope` is the exact
+  manifest document (see section 4).
+- `lookup_status` {url, out_dir?} — the same reconstruction with
+  `--no-download`; the fast read-only path.
+- `read_manifest` {path} — returns an existing `thread_manifest.json`
+  verbatim; refuses any other filename.
+- `get_schema` {} — returns the JSON Schema for the envelope.
+
+Error semantics: `isError: true` means the invocation itself failed (bad
+arguments, timeout, crash). `isError: false` with `envelope.status == "empty"`
+is an honest negative result — the post is unavailable, and `errors[]` says
+why. `lookup_status` applies a 120s hard timeout; `extract_thread` allows
+up to 900s (override with `XTHREAD_MCP_EXTRACT_TIMEOUT`).
+
 ---
 
 ## 4. The JSON contract
