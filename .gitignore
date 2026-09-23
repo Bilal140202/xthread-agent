@@ -1,6 +1,10 @@
 __pycache__/
 *.pyc
 media/
+demo_output/
+*.part
 *.mp4
 *.jpg
 !docs/**
+!tests/**
+!schema/**

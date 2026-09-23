@@ -7,6 +7,12 @@
 >
 > Read your role. Implement to your role. Test against your role. Deviate and
 > the system fails.
+>
+> **v3.0.0 amendments:** Role 1 gained a root guarantee and a candidate cap;
+> Role 2 gained a fallback decoder slot and real-HTTP-404 handling; Role 3
+> gained streaming, atomic writes, size verification, and a CDN host
+> allowlist; Role 4 gained the enveloped manifest and a thread-reconstruction
+> stage between decoding and fetching.
 
 ---
 
@@ -33,14 +39,19 @@ candidate conversation member IDs — or degrade to `[root_id]`.*
 ### You are the Thread Walker. You will:
 
 - Query the public thread-unroll source (currently UnrollNow) with the root ID
-  and a hard 40-second timeout.
-- Regex-extract every conversation member ID from the returned HTML — both
+  and a hard 40-second timeout, reading at most 20 MB.
+- Regex-extract every candidate ID from the returned HTML — both
   `status/<id>` occurrences and bare snowflake-style IDs.
-- Deduplicate **preserving first-seen order** (thread order is meaningful).
+- Deduplicate **preserving first-seen order** (candidate order is meaningful).
+- **Guarantee the root is present** in the output (prepend if the extraction
+  regex cannot see it — e.g. short legacy IDs).
+- Cap candidates at `MAX_CANDIDATES` (50) without ever dropping the root.
 - On *any* failure — timeout, HTTP error, garbage payload — log a single
-  warning and return `[root_id]`. You never raise, never abort the run.
-- Treat the output as **candidates**, not truth. Downstream decoding filters
-  it.
+  warning, record the structured error, and return `[root_id]`. A 200 page
+  with zero candidates is also a failure (`E_WALKER_EMPTY`), not a success.
+- Treat the output as **candidates**, not truth. Downstream decoding and chain
+  reconstruction filter it (the page embeds same-author recommendations that
+  are NOT thread members).
 
 ### Your interface (the contract)
 
@@ -52,7 +63,8 @@ def resolve_thread_ids(root_id: str) -> list[str]: ...
 
 - Verifying IDs yourself. That is the Decoder's job.
 - Raising exceptions to the Orchestrator. Degrade, don't crash.
-- Reordering IDs. First-seen order is the thread's spine.
+- Reordering IDs. First-seen order is the candidate spine.
+- Dropping the root, even when capping.
 - Caching across runs. Every run re-walks.
 - Hitting the source more than once per run.
 
@@ -66,19 +78,30 @@ def resolve_thread_ids(root_id: str) -> list[str]: ...
 
 ## Role 2 — The Metadata Decoder
 
-**Function:** `fetch_tweet(tid, tries=3)`
+**Function:** `fetch_tweet(tid, tries=3)` (+ `_fetch_fxtweet`,
+`_fetch_vxtweet`, `_normalize_vxtweet`)
 **One-line role:** *Receive a candidate ID, return the decoded tweet payload —
 or `None` if the ID is not a live tweet.*
 
 ### You are the Decoder. You will:
 
-- Query the FixTweet worker (`api.fxtwitter.com/status/<id>`) with 3 attempts
-  and linear backoff (2s, 4s, 6s).
-- Return the `tweet` object when `code == 200`.
-- Return `None` **silently** when `code == 404` — this is the signal that the
-  candidate was a media (amplify) ID, not a tweet. Filtering is your job.
-- Retry on network exceptions and non-404 error codes, then give up with
-  `None`.
+- Query the primary worker (`api.fxtwitter.com/status/<id>`) with 3 attempts
+  and linear backoff (2s, 4s), reading at most 5 MB per attempt.
+- Return the `tweet` object when `code == 200`, tagged
+  `_extraction_source = "fxtwitter"`.
+- Return `None` **silently** when unavailability arrives as a 200 body with
+  `code == 404` **or as a real HTTP 404/451 status** — both are the signal
+  that the candidate was a media (amplify) ID or an unavailable tweet.
+  Filtering is your job; neither case is ever retried.
+- Reject payloads whose tweet id is not 1–25 plain digits (remote ids are used
+  in filenames downstream — this is the injection guard).
+- When the primary fails network-side (timeouts, connection errors, 5xx),
+  try the fallback slot (`api.vxtwitter.com`, 2 attempts) and normalize its
+  payload into the FixTweet-shaped subset, tagged
+  `_extraction_source = "vxtwitter"`. Fields the fallback cannot provide
+  become explicit nulls — never fabricated.
+- Retry on network exceptions and non-404/451 error codes, then give up with
+  `None` and a recorded `E_DECODE_FAILED`.
 
 ### Your interface (the contract)
 
@@ -88,9 +111,10 @@ def fetch_tweet(tid: str, tries: int = 3) -> dict | None: ...
 
 ### You are forbidden from:
 
-- Treating a 404 as an error condition. It is a *filter signal*.
+- Treating a 404/451 as an error condition. It is a *filter signal*.
+- Retrying a 404/451. It is instant and final.
 - Returning partial payloads. All-or-`None`.
-- Following redirects to other services.
+- Fabricating values the fallback slot did not provide.
 - Logging the tweet text. Stats go to the manifest, not to logs.
 
 ### Your success criteria
@@ -98,20 +122,27 @@ def fetch_tweet(tid: str, tries: int = 3) -> dict | None: ...
 - Multi-video tweets return every video with direct CDN URLs, durations, and
   posters.
 - A media ID candidate returns `None` without a single retry.
+- A primary-slot outage still yields decoded posts via the fallback slot.
 
 ---
 
 ## Role 3 — The Media Fetcher
 
-**Function:** `download(url, dest, tries=3)`
+**Function:** `download(url, dest, tries=3)` (+ `_download_post_media`)
 **One-line role:** *Receive a CDN URL and a destination path, ensure the file
 exists on disk — or report failure.*
 
 ### You are the Fetcher. You will:
 
+- **Refuse any URL that is not https on `*.twimg.com`** — media URLs come
+  from third-party decoder payloads and must never reach local files or
+  internal networks. Refusal is recorded as `E_DOWNLOAD_FAILED`.
 - Skip immediately if the destination exists and is non-empty
-  (resumability).
-- Stream the payload to disk with a 180-second timeout and 3 attempts.
+  (resumability). A leftover `.part` file is never trusted.
+- Stream the payload to a `.part` file (1 MB chunks, per-chunk socket timeout
+  plus a whole-transfer deadline), then **verify size against
+  `Content-Length` when present**, then **atomically `os.replace`** into
+  place. A file is either fully written or absent.
 - Create parent directories as needed.
 - Log one line per file: `[dl ]` with size in MB, or `[err ]` with the reason.
 
@@ -123,42 +154,65 @@ def download(url: str, dest: Path, tries: int = 3) -> bool: ...
 
 ### You are forbidden from:
 
-- Writing outside `dest.parent`.
+- Fetching non-CDN URLs (no `file://`, no internal hosts, no non-twimg hosts).
+- Writing outside `dest.parent` (post IDs are validated digits before they
+  reach you; you never build paths from raw remote data).
 - Deleting or overwriting completed files.
 - Retrying a download that already succeeded on disk.
+- Accepting a truncated transfer (size mismatch = failure).
 - Partial writes: a file is either fully written or absent.
 
 ### Your success criteria
 
 - Two consecutive identical runs produce identical results; the second run
   performs zero network transfers for completed files.
+- A corrupted or truncated transfer never lands in the output directory.
 
 ---
 
 ## Role 4 — The Orchestrator
 
-**Function:** `harvest(root_id, out, do_download)` + `main()`
-**One-line role:** *Receive a status URL, walk the thread, decode, fetch, and
-emit the manifest — returning a structured summary and a process exit code.*
+**Function:** `normalize_input`, `reconstruct_thread`,
+`harvest(root_id, out, do_download=True, request_info=None,
+decode_sleep=DECODE_SLEEP) -> dict`, `main()`
+**One-line role:** *Receive a status URL, normalize it, walk the thread,
+decode, reconstruct the chain, map, fetch, and emit the enveloped manifest —
+returning the envelope and a process exit code.*
 
 ### You are the Orchestrator. You will:
 
-- Parse and canonicalize the input to a bare status ID.
-- Hand the ID to the Thread Walker, each candidate to the Decoder, each media
-  URL to the Fetcher.
-- Assemble the manifest in **thread order**, writing
-  `<out>/thread_manifest.json` with `ensure_ascii=False`.
+- Normalize and validate the input to a bare status ID
+  (`https://x.com|twitter.com/[mobile.|www.]/<user>/status/<id>`, trailing
+  `/photo|/video` suffixes and query strings tolerated; anything else →
+  `E_INVALID_INPUT`, exit 1).
+- Hand the ID to the Thread Walker, each candidate to the Decoder.
+- **Reconstruct the true self-reply chain** (`reconstruct_thread`): walk UP
+  from the requested root to the thread start and DOWN through same-author
+  replies, using `replying_to_status` as the only membership signal. Decoded
+  tweets that never chain are excluded and counted (`related_filtered`).
+- Map each payload to the stable schema (`map_tweet` and friends): explicit
+  nulls, ISO-8601 UTC timestamps, quoted posts one level deep, video variant
+  selection, per-URL media dedupe.
+- Assemble the **envelope** (`schema_version`, `source`, `request`, `status`,
+  `thread`, `posts`, `errors`, `metadata`) in thread order and write
+  `<out>/thread_manifest.json` atomically with `ensure_ascii=False`, UTF-8.
 - Print human logs to **stderr** and, under `--json`, exactly one summary
   object to **stdout** — never mixed.
-- Return exit code `0` iff at least one tweet was harvested; otherwise `1`.
+- Return exit code `0` iff at least one post was harvested; otherwise `1`;
+  argparse usage errors are `2`.
 - Rate-limit: ~0.6s between tweets. Serialize, don't parallelize.
 
 ### Your interface (the contract)
 
 ```python
-def harvest(root_id: str, out: Path, do_download: bool = True) -> list[dict]: ...
+def harvest(root_id: str, out: Path, do_download: bool = True,
+            request_info: dict | None = None,
+            decode_sleep: float = DECODE_SLEEP) -> dict: ...
 def main() -> int: ...
 ```
+
+*(v2 returned the bare posts list; v3 returns the envelope — a documented
+breaking change in RELEASE_NOTES.md.)*
 
 ### You are forbidden from:
 
@@ -180,10 +234,13 @@ def main() -> int: ...
 ## Cross-role contracts
 
 - The Walker's output is the Decoder's input; the Decoder's `None` is the
-  filter; the Fetcher's `bool` feeds the manifest's `downloaded` field.
-- Thread order established by the Walker is never altered downstream.
+  filter; the Orchestrator's chain reconstruction is the truth; the Fetcher's
+  `bool` feeds the manifest's `downloaded` field.
+- Thread order is established by chain reconstruction (`replying_to_status`),
+  never altered downstream.
 - All roles log through the shared `log()` gate; `--quiet`/`--json` silence
-  stderr globally.
+  stderr globally. All roles record structured failures through
+  `record_error()`; the Orchestrator snapshots them into `errors[]`.
 
 ## The perfection bar
 

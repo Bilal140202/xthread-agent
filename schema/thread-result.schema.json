@@ -1,0 +1,207 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Bilal140202/xthread-agent/schema/thread-result.schema.json",
+  "title": "xthread-agent thread result (schema_version 3.0)",
+  "description": "Enveloped, machine-readable result emitted to thread_manifest.json. Nullability is explicit: absent information is null, never a missing key.",
+  "type": "object",
+  "required": ["schema_version", "source", "request", "status", "thread", "posts", "errors", "metadata"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "3.0" },
+    "source": {
+      "type": "object",
+      "required": ["tool", "version", "generated_at"],
+      "properties": {
+        "tool": { "type": "string", "const": "xthread-agent" },
+        "version": { "type": "string" },
+        "generated_at": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "request": {
+      "type": "object",
+      "required": ["input", "status_id", "canonical_url", "options"],
+      "properties": {
+        "input": { "type": ["string", "null"], "description": "the raw input string as given" },
+        "status_id": { "type": ["string", "null"], "pattern": "^[0-9]{1,25}$" },
+        "canonical_url": { "type": ["string", "null"] },
+        "options": {
+          "type": "object",
+          "properties": { "download_media": { "type": "boolean" } }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ok", "partial", "empty"],
+      "description": "ok = posts and no errors; partial = posts but something degraded; empty = nothing harvested"
+    },
+    "thread": {
+      "type": "object",
+      "required": ["root_status_id", "tweet_count", "walker_candidates", "decoded_tweets",
+                   "media_ids_filtered", "decode_failed", "related_filtered",
+                   "ancestors_fetched", "chain_reconstructed", "degraded_to_root_only"],
+      "properties": {
+        "root_status_id": { "type": "string" },
+        "tweet_count": { "type": "integer", "minimum": 0 },
+        "walker_candidates": { "type": "integer", "minimum": 0 },
+        "decoded_tweets": { "type": "integer", "minimum": 0 },
+        "media_ids_filtered": { "type": "integer", "minimum": 0, "description": "candidates that were media ids or unavailable (404/451 filter signals)" },
+        "decode_failed": { "type": "integer", "minimum": 0, "description": "candidates lost to hard decode failures (see errors[])" },
+        "related_filtered": { "type": "integer", "minimum": 0, "description": "decoded tweets excluded because they are not part of the self-reply chain" },
+        "ancestors_fetched": { "type": "integer", "minimum": 0 },
+        "chain_reconstructed": { "type": "boolean" },
+        "degraded_to_root_only": { "type": "boolean" }
+      }
+    },
+    "posts": { "type": "array", "items": { "$ref": "#/definitions/post" } },
+    "errors": { "type": "array", "items": { "$ref": "#/definitions/error" } },
+    "metadata": {
+      "type": "object",
+      "required": ["duration_sec", "counts"],
+      "properties": {
+        "duration_sec": { "type": "number" },
+        "counts": {
+          "type": "object",
+          "required": ["posts", "photos", "videos", "downloaded_media", "failed_downloads"],
+          "properties": {
+            "posts": { "type": "integer", "minimum": 0 },
+            "photos": { "type": "integer", "minimum": 0 },
+            "videos": { "type": "integer", "minimum": 0 },
+            "downloaded_media": { "type": "integer", "minimum": 0 },
+            "failed_downloads": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "post": {
+      "type": "object",
+      "required": ["id", "url", "text", "lang", "source", "created_at", "created_at_iso",
+                   "thread_position", "replying_to", "replying_to_status", "extraction_source",
+                   "metrics", "author", "media", "quoted_post"],
+      "properties": {
+        "id": { "type": ["string", "null"], "pattern": "^[0-9]{1,25}$" },
+        "url": { "type": ["string", "null"] },
+        "text": { "type": ["string", "null"] },
+        "lang": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"], "description": "posting client, e.g. 'Twitter Web Client'" },
+        "created_at": { "type": ["string", "null"], "description": "raw legacy timestamp as provided by the decoder" },
+        "created_at_iso": { "type": ["string", "null"], "format": "date-time", "description": "UTC ISO-8601 derived from created_timestamp" },
+        "thread_position": { "type": ["integer", "null"], "minimum": 0, "description": "0 = thread start; null for quoted posts" },
+        "replying_to": { "type": ["string", "null"], "description": "screen name of the parent post's author" },
+        "replying_to_status": { "type": ["string", "null"], "pattern": "^[0-9]{1,25}$" },
+        "extraction_source": { "type": ["string", "null"], "enum": ["fxtwitter", "vxtwitter", null] },
+        "metrics": { "$ref": "#/definitions/metrics" },
+        "author": { "$ref": "#/definitions/author" },
+        "media": { "$ref": "#/definitions/media" },
+        "quoted_post": {
+          "oneOf": [{ "$ref": "#/definitions/post" }, { "type": "null" }],
+          "description": "the quoted (embedded) post, one level deep; its own quoted_post is always null"
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "required": ["likes", "retweets", "replies", "quotes", "bookmarks", "views"],
+      "properties": {
+        "likes": { "type": ["integer", "null"] },
+        "retweets": { "type": ["integer", "null"] },
+        "replies": { "type": ["integer", "null"] },
+        "quotes": { "type": ["integer", "null"] },
+        "bookmarks": { "type": ["integer", "null"] },
+        "views": { "type": ["integer", "null"] }
+      }
+    },
+    "author": {
+      "type": "object",
+      "required": ["id", "screen_name", "name", "description", "location", "avatar_url",
+                   "banner_url", "followers", "following", "media_count", "verified",
+                   "protected", "joined", "website"],
+      "properties": {
+        "id": { "type": ["string", "null"] },
+        "screen_name": { "type": ["string", "null"] },
+        "name": { "type": ["string", "null"] },
+        "description": { "type": ["string", "null"] },
+        "location": { "type": ["string", "null"] },
+        "avatar_url": { "type": ["string", "null"] },
+        "banner_url": { "type": ["string", "null"] },
+        "followers": { "type": ["integer", "null"] },
+        "following": { "type": ["integer", "null"] },
+        "media_count": { "type": ["integer", "null"] },
+        "verified": { "type": "boolean" },
+        "protected": { "type": "boolean" },
+        "joined": { "type": ["string", "null"] },
+        "website": {
+          "oneOf": [
+            { "type": "object", "properties": { "url": { "type": "string" }, "display_url": { "type": ["string", "null"] } } },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "media": {
+      "type": "object",
+      "required": ["photos", "videos"],
+      "properties": {
+        "photos": { "type": "array", "items": { "$ref": "#/definitions/photo" } },
+        "videos": { "type": "array", "items": { "$ref": "#/definitions/video" } }
+      }
+    },
+    "photo": {
+      "type": "object",
+      "required": ["url", "alt_text", "width", "height", "file", "downloaded"],
+      "properties": {
+        "url": { "type": ["string", "null"] },
+        "alt_text": { "type": ["string", "null"] },
+        "width": { "type": ["integer", "null"] },
+        "height": { "type": ["integer", "null"] },
+        "file": { "type": ["string", "null"], "description": "local filename relative to the output dir; null unless downloaded" },
+        "downloaded": { "type": "boolean", "description": "true iff the file exists on disk" }
+      }
+    },
+    "video": {
+      "type": "object",
+      "required": ["url", "playlist_url", "poster_url", "format", "duration", "width", "height",
+                   "variants", "file", "poster_file", "downloaded", "downloadable", "reason"],
+      "properties": {
+        "url": { "type": ["string", "null"], "description": "best downloadable mp4 URL (variant-selected when the source is HLS)" },
+        "playlist_url": { "type": ["string", "null"], "description": "original m3u8 URL when a variant was substituted" },
+        "poster_url": { "type": ["string", "null"] },
+        "format": { "type": ["string", "null"], "description": "MIME type, e.g. video/mp4" },
+        "duration": { "type": ["number", "null"] },
+        "width": { "type": ["integer", "null"] },
+        "height": { "type": ["integer", "null"] },
+        "variants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "url": { "type": ["string", "null"] },
+              "container": { "type": ["string", "null"] },
+              "bitrate": { "type": ["integer", "null"] },
+              "codec": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "file": { "type": ["string", "null"] },
+        "poster_file": { "type": ["string", "null"] },
+        "downloaded": { "type": "boolean" },
+        "downloadable": { "type": "boolean", "description": "false when only an HLS playlist exists (no mp4 variant)" },
+        "reason": { "type": ["string", "null"], "enum": ["hls_only", "no_mp4_variant", null] }
+      }
+    },
+    "error": {
+      "type": "object",
+      "required": ["stage", "code", "message", "subject"],
+      "properties": {
+        "stage": { "type": "string", "enum": ["walker", "decoder", "fetcher", "orchestrator"] },
+        "code": { "type": "string", "enum": ["E_WALKER_UNAVAILABLE", "E_WALKER_EMPTY", "E_ROOT_UNAVAILABLE",
+                                             "E_DECODE_FAILED", "E_DOWNLOAD_FAILED", "E_MANIFEST_WRITE_FAILED",
+                                             "E_INVALID_INPUT"] },
+        "message": { "type": "string" },
+        "subject": { "type": ["string", "null"], "description": "status id or URL the error applies to" }
+      }
+    }
+  }
+}
