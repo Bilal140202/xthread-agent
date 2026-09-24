@@ -262,7 +262,7 @@ your MCP client config as a stdio command, e.g.
 ## Testing
 
 ```bash
-python3 -m unittest discover -s tests -p "test_*.py" -v   # 108 offline tests, ~1s
+python3 -m unittest discover -s tests -p "test_*.py" -v   # 110 offline tests, ~1s
 ```
 
 The suite covers URL normalization, the walker, both decoders (including the
@@ -307,6 +307,11 @@ access is officially supported by X or guaranteed to last — see
 - **Dependency on free third-party services.** If UnrollNow or FixTweet change
   or gate datacenter IPs, functionality degrades (root-only harvest, or
   `empty`). The fallback decoder slot mitigates but does not eliminate this.
+- **Retweet URLs resolve to the original post.** For a retweet URL the
+  decoder returns the original tweet's payload, so `posts[0].id` is the
+  *original* post ID while `request.status_id` / `thread.root_status_id`
+  stay the requested ID. The harvested content is exactly what that URL
+  publicly shows (the retweeted post).
 - **Linear self-reply chains only.** Threads where the author branches into
   multiple replies get the first-seen branch; cross-author reply trees are out
   of scope by design.

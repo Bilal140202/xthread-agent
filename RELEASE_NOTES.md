@@ -21,12 +21,12 @@ no schema changed (schema_version stays 3.0), no CLI contract changed.
   single source of truth. Tool results distinguish invocation failures
   (`isError: true`) from honest negative results (`isError: false` with
   `envelope.status == "empty"`).
-- **`tests/test_mcp.py` — 19 offline MCP tests**: protocol handlers
+- **`tests/test_mcp.py` — 21 offline MCP tests**: protocol handlers
   (initialize version echo/fallback, ping, tools/list shape, notifications
   stay silent, unknown methods), subprocess framing over stdio (parse
   errors, sequential request/response pairing), and tool error paths
   (invalid input fails before any network call, `read_manifest` filename
-  guard, missing files). Total suite: 89 → 108 tests.
+  guard, missing files). Total suite: 89 → 110 tests.
 - **`.github/workflows/ci.yml` — GitHub Actions CI.** Python 3.9–3.13
   matrix on push/PR/manual: byte-compile all sources, validate the bundled
   JSON Schema, run the full offline suite, CLI smoke checks (usage-error

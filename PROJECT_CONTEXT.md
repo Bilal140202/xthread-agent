@@ -115,6 +115,9 @@ DISCOVERY (unrollnow.com)  →  DECODE (api.fxtwitter.com, fallback
 
 - Linear self-reply chains only; branching takes the first-seen branch.
 - Quoted-post media recorded as URLs, not downloaded.
+- Retweet URLs resolve to the original post (decoder behavior): `posts[0].id`
+  is the original's ID; `root_status_id` stays the requested one (verified
+  live 2026-09-24).
 - Depends on free third-party services (UnrollNow, FixTweet, vxtwitter);
   any of them gating datacenter IPs degrades the tool (root-only or empty).
 - Slow-drip transfers are cut at the deadline and restarted, not byte-resumed.
@@ -147,7 +150,7 @@ suspect endpoint with curl from the same IP class, update the matrix row.
 ## 9. How to test it
 
 ```bash
-# offline suite (108 tests, ~1s, no network) — CI runs exactly this
+# offline suite (110 tests, ~1s, no network) — CI runs exactly this
 python3 -m unittest discover -s tests -p "test_*.py" -v
 
 # live smoke (polite: one thread, ideally one you control)
