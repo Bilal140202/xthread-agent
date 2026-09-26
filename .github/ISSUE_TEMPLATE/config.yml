@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Endpoint status questions
+    url: https://github.com/Bilal140202/xthread-agent/blob/main/docs/endpoint-matrix.md
+    about: Before reporting "nothing works", check the living endpoint matrix — a dead upstream surface degrades the tool by design.

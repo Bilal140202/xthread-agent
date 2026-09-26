@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>xthread-agent — X/Twitter threads for AI agents, no login required</title>
+  <meta name="description" content="A deterministic, stdlib-only CLI + MCP server that turns any public X/Twitter status URL into a reconstructed thread, machine-readable JSON, and downloaded media. No login. No API keys. No browser.">
+  <meta property="og:title" content="xthread-agent — X/Twitter threads for AI agents">
+  <meta property="og:description" content="Public X/Twitter status URL in → reconstructed thread, machine-readable JSON, and downloaded media out. No login, no API keys, no browser. stdlib-only Python + MCP server.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://bilal140202.github.io/xthread-agent/">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300..800&family=Roboto+Mono:wght@400;500;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+  <!-- ══════════════════ top app bar ══════════════════ -->
+  <header class="app-bar" id="appBar">
+    <div class="container app-bar-inner">
+      <a class="brand" href="#top" aria-label="xthread-agent home">
+        <span class="brand-glyph" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <path d="M4 6h9a3 3 0 0 1 3 3v0a3 3 0 0 1-3 3H8"/>
+            <path d="M8 12h9a3 3 0 0 1 3 3v0a3 3 0 0 1-3 3H7"/>
+            <circle cx="5" cy="6" r="1.4" fill="currentColor" stroke="none"/>
+          </svg>
+        </span>
+        <span>xthread<b>-agent</b></span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a class="nav-link" href="#features">Features</a>
+        <a class="nav-link" href="#architecture">Architecture</a>
+        <a class="nav-link" href="#mcp">MCP</a>
+        <a class="nav-link" href="#faq">FAQ</a>
+      </nav>
+      <div class="app-bar-actions">
+        <button class="icon-btn" id="themeToggle" aria-label="Toggle light and dark theme">
+          <span class="material-symbols-rounded" id="themeIcon">dark_mode</span>
+        </button>
+        <a class="icon-btn" href="https://github.com/Bilal140202/xthread-agent" target="_blank" rel="noopener" aria-label="GitHub repository" style="width:auto; padding:0 18px; gap:8px; border:1px solid var(--md-outline-variant); border-radius:999px; display:inline-flex;">
+          <svg width="19" height="19" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          <span class="label-large">GitHub</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- ══════════════════ hero ══════════════════ -->
+    <section class="hero">
+      <div class="hero-bg" aria-hidden="true"><div class="hero-grid"></div></div>
+      <div class="container hero-inner">
+        <div>
+          <div class="hero-badges reveal">
+            <span class="chip"><span class="dot"></span> v3.2.0 · MIT</span>
+            <span class="chip"><span class="material-symbols-rounded">verified</span> 135 offline tests</span>
+            <span class="chip"><span class="material-symbols-rounded">extension_off</span> 0 dependencies</span>
+          </div>
+          <h1 class="display-large reveal reveal-d1">Give your agent <em>X threads</em>, not CAPTCHAs.</h1>
+          <p class="lede body-large muted reveal reveal-d2">
+            xthread-agent turns any public X/Twitter status URL into a reconstructed
+            self-reply thread, an enveloped machine-readable JSON manifest, and every
+            video &amp; photo on disk. It never logs in, never touches cookies, never
+            opens a browser — and it tells you honestly what it could not get.
+          </p>
+          <div class="hero-ctas reveal reveal-d3">
+            <a class="btn btn-filled" href="https://github.com/Bilal140202/xthread-agent" target="_blank" rel="noopener">
+              <span class="material-symbols-rounded">arrow_forward</span> Get started
+            </a>
+            <a class="btn btn-tonal" href="#architecture">
+              <span class="material-symbols-rounded">schema</span> How it works
+            </a>
+          </div>
+          <div class="install-strip reveal reveal-d3">
+            <span class="prompt">$</span>
+            <code id="installCmd">pip install xthread-agent</code>
+            <button class="copy-btn" data-copy="pip install xthread-agent" aria-label="Copy install command">
+              <span class="material-symbols-rounded" style="font-size:19px">content_copy</span>
+            </button>
+          </div>
+          <div class="hero-stats reveal reveal-d3">
+            <span class="chip"><span class="material-symbols-rounded">alt_route</span> 2 walker slots</span>
+            <span class="chip"><span class="material-symbols-rounded">sync_alt</span> 2 decoder slots</span>
+            <span class="chip"><span class="material-symbols-rounded">hub</span> MCP server built-in</span>
+            <span class="chip"><span class="material-symbols-rounded">bolt</span> ~1s test suite</span>
+          </div>
+        </div>
+
+        <div class="terminal reveal reveal-d2" aria-label="Animated demo of the CLI">
+          <div class="terminal-bar">
+            <span class="terminal-dot"></span><span class="terminal-dot"></span><span class="terminal-dot"></span>
+            <span class="terminal-title">bash — xthread-agent</span>
+          </div>
+          <div class="terminal-body" id="term" aria-hidden="true"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════ why ══════════════════ -->
+    <section class="block alt" id="why">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">Why it exists</span>
+          <h2 class="headline-medium">X locked its front door. The content is still public.</h2>
+          <p class="muted">X's auth wall guards <b>discovery</b> APIs, while its media CDN serves
+          bytes to anyone holding a resolved URL. xthread-agent routes through the open services
+          that grew up around X — and never touches x.com itself. No credentials, ever.</p>
+        </div>
+        <div class="card-grid">
+          <div class="card reveal">
+            <div class="card-icon"><span class="material-symbols-rounded">lock_open</span></div>
+            <h3>No login. No cookies. No browser.</h3>
+            <p>The tool never presents credentials or a browser fingerprint. Public content only — deleted and protected posts fail closed, by design.</p>
+            <span class="card-tag">Honest access</span>
+          </div>
+          <div class="card reveal reveal-d1">
+            <div class="card-icon"><span class="material-symbols-rounded">robot_2</span></div>
+            <h3>Built for agents, not humans</h3>
+            <p>Logs on stderr, data on stdout, stable exit codes, a JSON Schema contract, and an <code>agent.md</code> manual — a headless agent runs it end-to-end without asking a human.</p>
+            <span class="card-tag">Machine-first</span>
+          </div>
+          <div class="card reveal reveal-d2">
+            <div class="card-icon"><span class="material-symbols-rounded">block</span></div>
+            <h3>Deterministic. No LLM inside.</h3>
+            <p>A pure state machine: same input, same steps, same honest envelope. Zero pip dependencies — one stdlib-only file that runs anywhere Python 3.9+ exists.</p>
+            <span class="card-tag">Reproducible</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════ features ══════════════════ -->
+    <section class="block" id="features">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">Features</span>
+          <h2 class="headline-medium">Everything a thread-harvesting agent needs</h2>
+          <p class="muted">Every claim below is backed by the offline test suite and re-verified against live endpoints.</p>
+        </div>
+        <div class="card-grid">
+          <div class="card reveal">
+            <div class="card-icon"><span class="material-symbols-rounded">forum</span></div>
+            <h3>True thread reconstruction</h3>
+            <p>Chain membership comes only from <code>replying_to_status</code> — walk up to the thread start, down through self-replies. Same-author recommendations are filtered, not harvested.</p>
+          </div>
+          <div class="card reveal">
+            <div class="card-icon"><span class="material-symbols-rounded">alt_route</span></div>
+            <h3>Dual-homed discovery</h3>
+            <p>Two walker slots (UnrollNow, ThreadReaderApp). If one dies or drifts, the other takes the walk transparently — and the manifest names who served it (<code>walker_slot</code>).</p>
+          </div>
+          <div class="card reveal">
+            <div class="card-icon"><span class="material-symbols-rounded">swap_horiz</span></div>
+            <h3>Fallback decoder slot</h3>
+            <p>FixTweet decodes each post; vxtwitter is the automatic network-failure fallback with an honest, provenance-tagged field subset.</p>
+          </div>
+          <div class="card reveal">
+            <div class="card-icon"><span class="material-symbols-rounded">movie</span></div>
+            <h3>Best-quality media</h3>
+            <p>4K-ready mp4 selection (highest-bitrate variant when the source is HLS), poster frames, photos with alt text, resumable + size-verified + atomic downloads.</p>
+          </div>
+          <div class="card reveal">
+            <div class="card-icon"><span class="material-symbols-rounded">link</span></div>
+            <h3>t.co resolution</h3>
+            <p>Paste a t.co shortlink: one hop is followed (HTTP redirect or the embedded-interstitial fallback), then validated — non-status destinations are rejected, never guessed.</p>
+          </div>
+          <div class="card reveal">
+            <div class="card-icon"><span class="material-symbols-rounded">description</span></div>
+            <h3>Envelope contract</h3>
+            <p><code>thread_manifest.json</code> — a versioned, schema-validated envelope with posts, authors, timestamps, metrics, media, per-stage errors, and explicit nulls. Never fabricated data.</p>
+          </div>
+          <div class="card reveal">
+            <div class="card-icon"><span class="material-symbols-rounded">quote</span></div>
+            <h3>Quoted posts included</h3>
+            <p>Quoted content is captured one level deep with author, text, timestamp and media URLs — recorded, not silently dropped.</p>
+          </div>
+          <div class="card reveal">
+            <div class="card-icon"><span class="material-symbols-rounded">security</span></div>
+            <h3>Defense in depth</h3>
+            <p>Media downloads restricted to <code>*.twimg.com</code> over HTTPS, remote IDs validated before touching the filesystem, response-body caps, no shell, no eval.</p>
+          </div>
+          <div class="card reveal">
+            <div class="card-icon"><span class="material-symbols-rounded">degrade</span></div>
+            <h3>Degrades, never lies</h3>
+            <p>Lose the walker → root-only harvest, flagged. Lose a video variant → <code>hls_only</code> reason. Lose everything → <code>status: empty</code> + exit 1. The envelope always says what it did not get.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════ architecture ══════════════════ -->
+    <section class="block alt" id="architecture">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">Architecture</span>
+          <h2 class="headline-medium">Three replaceable tiers, one honest envelope</h2>
+          <p class="muted">Each tier is a slot with a narrow contract. X itself is never touched; every auth burden in X's stack sits in front of discovery, not delivery.</p>
+        </div>
+        <div class="tiers reveal">
+          <div class="tier">
+            <div class="tier-num">TIER 1 — DISCOVERY</div>
+            <h3>Thread Walk</h3>
+            <div class="host">unrollnow.com → threadreaderapp.com</div>
+            <p>Ordered candidate IDs from the walker slots. Root always kept, capped at 50. Candidates only — never trusted as truth.</p>
+          </div>
+          <div class="tier-arrow"><span class="material-symbols-rounded">arrow_forward</span></div>
+          <div class="tier">
+            <div class="tier-num">TIER 2 — DECODE</div>
+            <h3>Metadata</h3>
+            <div class="host">api.fxtwitter.com → api.vxtwitter.com</div>
+            <p>Per-post JSON: text, author, timestamps, metrics, media URLs, quoted posts. 404 = filter signal, never retried.</p>
+          </div>
+          <div class="tier-arrow"><span class="material-symbols-rounded">arrow_forward</span></div>
+          <div class="tier">
+            <div class="tier-num">TIER 3 — DELIVER</div>
+            <h3>Media Fetch</h3>
+            <div class="host">video.twimg.com · pbs.twimg.com</div>
+            <p>No auth needed once a URL is known. Streamed, size-verified, atomically renamed — a crash never corrupts a file.</p>
+          </div>
+        </div>
+        <div class="honesty-row reveal">
+          <span class="chip"><span class="material-symbols-rounded">schedule</span> ~0.6s between decode calls</span>
+          <span class="chip"><span class="material-symbols-rounded">compress</span> 20 MB / 5 MB response caps</span>
+          <span class="chip"><span class="material-symbols-rounded">gpp_good</span> CDN host allowlist</span>
+          <span class="chip"><span class="material-symbols-rounded">receipt_long</span> per-stage errors in the envelope</span>
+        </div>
+
+        <div class="m3-table-wrap reveal" style="margin-top:44px">
+          <table class="m3-table">
+            <thead><tr><th>Supported input</th><th>Example</th><th>Behavior</th></tr></thead>
+            <tbody>
+              <tr><td>x.com / twitter.com</td><td><code>https://x.com/user/status/123</code></td><td>Full pipeline</td></tr>
+              <tr><td>mobile / www hosts</td><td><code>https://mobile.twitter.com/user/status/123</code></td><td>Normalized</td></tr>
+              <tr><td>i/web + suffixes</td><td><code>…/status/123/photo/1</code>, <code>?s=20</code></td><td>Stripped to the ID</td></tr>
+              <tr><td>Bare status ID</td><td><code>123456789012345678</code></td><td>Full pipeline</td></tr>
+              <tr><td>t.co shortlinks</td><td><code>https://t.co/abc123</code></td><td>One hop, then validated</td></tr>
+              <tr><td>Anything else</td><td>profiles, hashtags, other hosts</td><td class="status down"><span class="dot"></span> Rejected with a stable error code</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════ MCP ══════════════════ -->
+    <section class="block" id="mcp">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">Model Context Protocol</span>
+          <h2 class="headline-medium">Plug it straight into your agent host</h2>
+          <p class="muted"><code>mcp_server.py</code> exposes the harvester as MCP tools over the standard stdio transport — still stdlib-only, still no login. Each tool call shells out to the CLI with a hard timeout, so one contract stays the single source of truth.</p>
+        </div>
+        <div class="mcp-grid">
+          <div class="tool-list reveal">
+            <div class="tool-item">
+              <div class="tool-icon"><span class="material-symbols-rounded">download</span></div>
+              <div><h4>extract_thread</h4><p>Full harvest — thread reconstruction + media downloads; returns the complete envelope.</p></div>
+            </div>
+            <div class="tool-item">
+              <div class="tool-icon"><span class="material-symbols-rounded">search</span></div>
+              <div><h4>lookup_status</h4><p>Metadata only — text, authors, timestamps, media URLs, no files on disk.</p></div>
+            </div>
+            <div class="tool-item">
+              <div class="tool-icon"><span class="material-symbols-rounded">receipt_long</span></div>
+              <div><h4>read_manifest</h4><p>Return an existing manifest verbatim. Refuses any other filename.</p></div>
+            </div>
+            <div class="tool-item">
+              <div class="tool-icon"><span class="material-symbols-rounded">data_object</span></div>
+              <div><h4>get_schema</h4><p>The JSON Schema (draft-07) behind the envelope contract.</p></div>
+            </div>
+          </div>
+          <div class="code-card reveal reveal-d1">
+            <div class="code-card-head"><span>mcp client config · stdio</span></div>
+            <pre>{
+  <span class="ck">"mcpServers"</span>: {
+    <span class="ck">"xthread-agent"</span>: {
+      <span class="ck">"command"</span>: <span class="cs">"python3"</span>,
+      <span class="ck">"args"</span>: [<span class="cs">"/path/to/mcp_server.py"</span>]
+    }
+  }
+}</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════ for agents ══════════════════ -->
+    <section class="block alt" id="agents">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">The 3-command contract</span>
+          <h2 class="headline-medium">Any agent, any language, one pipeline</h2>
+          <p class="muted">Logs always on stderr, data always on stdout. Exit <code>0</code> = harvested, <code>1</code> = nothing, <code>2</code> = usage error.</p>
+        </div>
+        <div class="code-card reveal">
+          <div class="code-card-head"><span>agent quickstart</span>
+            <button class="copy-btn" data-copy-target="agentCode" aria-label="Copy quickstart"><span class="material-symbols-rounded" style="font-size:19px">content_copy</span></button>
+          </div>
+          <pre id="agentCode"><span class="cc"># 1 · run — machine-readable summary on stdout</span>
+python3 xthread-agent.py <span class="cs">"&lt;status_url&gt;"</span> --json --quiet
+
+<span class="cc"># 2 · inspect — the full envelope, schema-validated</span>
+cat &lt;out&gt;/thread_manifest.json
+
+<span class="cc"># 3 · branch on the contract</span>
+<span class="ck">status</span> = <span class="cs">"ok"</span> | <span class="cs">"partial"</span> | <span class="cs">"empty"</span>   <span class="cc"># errors[] tells you why</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════ FAQ ══════════════════ -->
+    <section class="block" id="faq">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">FAQ</span>
+          <h2 class="headline-medium">The honest answers</h2>
+        </div>
+        <div class="faq reveal">
+          <details>
+            <summary>Does it really need no login?<span class="material-symbols-rounded">expand_more</span></summary>
+            <div class="faq-body">It never presents credentials, cookies, session tokens, or a browser fingerprint, and never touches x.com itself. It reads three public surfaces: an unrolling service, two open link-decoder workers, and X's own media CDN. That works because X's auth wall guards discovery APIs while the CDN serves bytes to anyone holding a resolved URL. It does not mean X sanctions or guarantees this access.</div>
+          </details>
+          <details>
+            <summary>Is this allowed by X's Terms of Service?<span class="material-symbols-rounded">expand_more</span></summary>
+            <div class="faq-body">Reaching publicly accessible content through third-party surfaces may be subject to X's Terms of Service, the third parties' terms, copyright and data-protection law — your responsibility, your jurisdiction. The tool reaches only what any visitor can see, fails closed on protected content, and grants no license to harvested media. If you need guaranteed, sanctioned access, use the official X API.</div>
+          </details>
+          <details>
+            <summary>What happens when an upstream service dies?<span class="material-symbols-rounded">expand_more</span></summary>
+            <div class="faq-body">Nothing explodes: discovery is dual-homed (UnrollNow → ThreadReaderApp), decoding has a fallback slot (vxtwitter), and every failure lands in the envelope's <code>errors[]</code> with a stable code. Worst case is a root-only harvest or an honest <code>status: empty</code>. Slots are designed to be replaced behind their contracts.</div>
+          </details>
+          <details>
+            <summary>What can't it do?<span class="material-symbols-rounded">expand_more</span></summary>
+            <div class="faq-body">Linear self-reply chains only (branches take the first-seen path). Quoted-post media is recorded as URLs, not downloaded. Deleted, protected, and age-restricted content fails closed. HLS-only videos without mp4 variants are reported, not downloaded. Nothing here bypasses access controls.</div>
+          </details>
+          <details>
+            <summary>Why stdlib-only Python?<span class="material-symbols-rounded">expand_more</span></summary>
+            <div class="faq-body">Deployment story: copy one file into a bare sandbox and run it. No pip, no node, no ffmpeg — anywhere Python 3.9+ exists, the agent works. The PyPI package exists for convenience and is byte-identical to the single file, enforced by a drift-guard test.</div>
+          </details>
+          <details>
+            <summary>How is it tested?<span class="material-symbols-rounded">expand_more</span></summary>
+            <div class="faq-body">135 offline tests (~1s, no network, synthetic fixtures only) covering URL normalization, both walker slots, both decoders, chain reconstruction, downloads, the envelope contract, the CLI, the MCP wrapper, and package sync. CI runs the same suite on Python 3.9–3.13 on every push. Live endpoints are deliberately never probed from CI — politeness is a hard constraint.</div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════ CTA ══════════════════ -->
+    <section class="block">
+      <div class="container">
+        <div class="cta-band reveal">
+          <h2 class="headline-medium">Stop scraping. Start harvesting.</h2>
+          <p>One file, zero dependencies, an MCP server included — and an envelope that never lies to your agent.</p>
+          <a class="btn btn-filled" href="https://github.com/Bilal140202/xthread-agent" target="_blank" rel="noopener">
+            <span class="material-symbols-rounded">star</span> Star on GitHub
+          </a>
+          <a class="btn btn-outlined" href="https://github.com/Bilal140202/xthread-agent/blob/main/agent.md" target="_blank" rel="noopener">
+            <span class="material-symbols-rounded">menu_book</span> Read agent.md
+          </a>
+          <div class="install-strip">
+            <span class="prompt">$</span>
+            <code>pip install xthread-agent</code>
+            <button class="copy-btn" data-copy="pip install xthread-agent" aria-label="Copy install command">
+              <span class="material-symbols-rounded" style="font-size:19px">content_copy</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ══════════════════ footer ══════════════════ -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col" style="max-width:340px">
+          <a class="brand" href="#top" style="margin-bottom:14px">
+            <span class="brand-glyph" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <path d="M4 6h9a3 3 0 0 1 3 3v0a3 3 0 0 1-3 3H8"/>
+                <path d="M8 12h9a3 3 0 0 1 3 3v0a3 3 0 0 1-3 3H7"/>
+                <circle cx="5" cy="6" r="1.4" fill="currentColor" stroke="none"/>
+              </svg>
+            </span>
+            <span>xthread<b>-agent</b></span>
+          </a>
+          <p class="body-medium">X/Twitter thread content &amp; media harvesting for AI agents. No login, no API keys, no browser — and honest about every limitation.</p>
+        </div>
+        <div class="footer-col">
+          <h5>Project</h5>
+          <a href="https://github.com/Bilal140202/xthread-agent" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/Bilal140202/xthread-agent/issues" target="_blank" rel="noopener">Issues</a>
+          <a href="https://github.com/Bilal140202/xthread-agent/releases" target="_blank" rel="noopener">Releases</a>
+        </div>
+        <div class="footer-col">
+          <h5>Docs</h5>
+          <a href="https://github.com/Bilal140202/xthread-agent#readme" target="_blank" rel="noopener">README</a>
+          <a href="https://github.com/Bilal140202/xthread-agent/blob/main/agent.md" target="_blank" rel="noopener">agent.md</a>
+          <a href="https://github.com/Bilal140202/xthread-agent/blob/main/docs/endpoint-matrix.md" target="_blank" rel="noopener">Endpoint matrix</a>
+        </div>
+        <div class="footer-col">
+          <h5>Legal</h5>
+          <a href="https://github.com/Bilal140202/xthread-agent/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
+          <a href="https://github.com/Bilal140202/xthread-agent#legal--platform-considerations" target="_blank" rel="noopener">Platform terms</a>
+        </div>
+      </div>
+      <div class="footer-note">
+        <span>© 2026 Bilal140202 · MIT License</span>
+        <span>Not affiliated with X Corp. Public content only; posts and media belong to their authors.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>

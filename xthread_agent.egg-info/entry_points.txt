@@ -1,0 +1,2 @@
+[console_scripts]
+xthread-agent = xthread_agent:main

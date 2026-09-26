@@ -11,6 +11,7 @@ Legend: ✅ working · ⚠️ degraded/rate-limited · ❌ dead/blocked
 | Surface | Status | Failure signature | Notes |
 |---|---|---|---|
 | `unrollnow.com/status/<id>` | ✅ | — | Embeds candidate IDs incl. media (amplify) IDs. ⚠️ **Also embeds same-author recommendations that are NOT thread members** (verified 2026-09-24) — treat as candidates only; chain membership must come from decoder `replying_to_status`. Root may be absent for short legacy IDs. |
+| `threadreaderapp.com/thread/<id>` | ✅ (fallback slot) | clean 404 for unknown IDs | Second discovery slot (v3.2.0). Returns 200 for any status, embedding the root ID plus unrelated share/recommendation IDs — candidates only, same truth-layer rule. Used only when UnrollNow fails or yields nothing (verified 2026-09-26). |
 | `x.com` HTML shell | ❌ | Empty react root for datacenter IPs | Data gate never fires; scraping the shell is pointless. |
 | Nitter public instances | ❌ | HTTP 000 / timeout, `nitter.net` 451 | Public network effectively dead since upstream API loss. |
 | `syndication.twitter.com/srv/timeline-profile` | ⚠️ | HTTP 429 after a few calls | Occasionally usable for a single profile, never for a thread walk. |

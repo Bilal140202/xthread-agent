@@ -36,7 +36,8 @@ class HarvestHarness(unittest.TestCase):
             tw = tweets_by_id.get(tid)
             return dict(tw) if tw else None
 
-        p1 = patch.object(m, "resolve_thread_ids", return_value=list(walker_ids))
+        p1 = patch.object(m, "resolve_thread_ids",
+                          return_value=(list(walker_ids), "unrollnow"))
         p2 = patch.object(m, "fetch_tweet", side_effect=fake_fetch)
         p3 = patch.object(m, "download", side_effect=fake_download)
         return p1, p2, p3
@@ -70,6 +71,7 @@ class TestHarvestEnvelope(HarvestHarness):
                          [fx.ROOT_ID, fx.CHILD1_ID, fx.CHILD2_ID])
         self.assertEqual(env["thread"]["related_filtered"], 1)
         self.assertEqual(env["thread"]["walker_candidates"], 5)
+        self.assertEqual(env["thread"]["walker_slot"], "unrollnow")
         self.assertEqual(env["thread"]["decoded_tweets"], 4)
         self.assertEqual(env["thread"]["media_ids_filtered"], 1)
         self.assertEqual(env["errors"], [])
@@ -103,7 +105,7 @@ class TestHarvestEnvelope(HarvestHarness):
     def test_walker_failure_degrades_to_root(self):
         def fake_walk(root_id):
             m.record_error("walker", m.E_WALKER_UNAVAILABLE, "walk down")
-            return [root_id]
+            return [root_id], "none"
 
         tweets = {fx.ROOT_ID: fx.fxtweet()}
         with patch.object(m, "resolve_thread_ids", side_effect=fake_walk), \
@@ -112,7 +114,20 @@ class TestHarvestEnvelope(HarvestHarness):
             env = m.harvest(fx.ROOT_ID, self.out, do_download=False, decode_sleep=0)
         self.assertEqual(env["status"], "partial")
         self.assertTrue(env["thread"]["degraded_to_root_only"])
+        self.assertEqual(env["thread"]["walker_slot"], "none")
         self.assertEqual(env["thread"]["tweet_count"], 1)
+
+    def test_walker_slot_recorded_in_envelope(self):
+        # fallback-slot success stays visible: primary's failure is in errors[],
+        # but walker_slot names who actually served the walk
+        tweets = {fx.ROOT_ID: fx.fxtweet()}
+        with patch.object(m, "resolve_thread_ids",
+                          return_value=([fx.ROOT_ID], "threadreaderapp")), \
+                patch.object(m, "fetch_tweet", side_effect=lambda t, tries=3: dict(tweets[t])), \
+                patch.object(m, "download"):
+            env = m.harvest(fx.ROOT_ID, self.out, do_download=False, decode_sleep=0)
+        self.assertEqual(env["thread"]["walker_slot"], "threadreaderapp")
+        self.assertFalse(env["thread"]["degraded_to_root_only"])
 
     def test_decode_failure_marks_partial(self):
         tweets = {fx.ROOT_ID: fx.fxtweet()}
@@ -124,7 +139,7 @@ class TestHarvestEnvelope(HarvestHarness):
             m.record_error("decoder", m.E_DECODE_FAILED, "boom", subject=tid)
             return None
 
-        with patch.object(m, "resolve_thread_ids", return_value=[fx.ROOT_ID, fx.CHILD1_ID]), \
+        with patch.object(m, "resolve_thread_ids", return_value=([fx.ROOT_ID, fx.CHILD1_ID], "unrollnow")), \
                 patch.object(m, "fetch_tweet", side_effect=fake_fetch), \
                 patch.object(m, "download"):
             env = m.harvest(fx.ROOT_ID, self.out, do_download=False, decode_sleep=0)
@@ -139,7 +154,7 @@ class TestHarvestEnvelope(HarvestHarness):
                            "download failed after 3 attempts", subject=url)
             return False
 
-        with patch.object(m, "resolve_thread_ids", return_value=[fx.ROOT_ID]), \
+        with patch.object(m, "resolve_thread_ids", return_value=([fx.ROOT_ID], "unrollnow")), \
                 patch.object(m, "fetch_tweet", side_effect=lambda t, tries=3: dict(tweets[t])), \
                 patch.object(m, "download", side_effect=fake_download_fail):
             env = m.harvest(fx.ROOT_ID, self.out, do_download=True, decode_sleep=0)
@@ -150,7 +165,7 @@ class TestHarvestEnvelope(HarvestHarness):
 
     def test_no_download_leaves_files_null(self):
         tweets = {fx.ROOT_ID: fx.fxtweet(photos=[fx.photo()], videos=[fx.video()])}
-        with patch.object(m, "resolve_thread_ids", return_value=[fx.ROOT_ID]), \
+        with patch.object(m, "resolve_thread_ids", return_value=([fx.ROOT_ID], "unrollnow")), \
                 patch.object(m, "fetch_tweet", side_effect=lambda t, tries=3: dict(tweets[t])), \
                 patch.object(m, "download"):
             env = m.harvest(fx.ROOT_ID, self.out, do_download=False, decode_sleep=0)
@@ -163,7 +178,7 @@ class TestHarvestEnvelope(HarvestHarness):
     def test_hls_only_video_explained_not_silent(self):
         tweets = {fx.ROOT_ID: fx.fxtweet(
             videos=[fx.video(url="https://video.twimg.com/x/pl/fixture.m3u8")])}
-        with patch.object(m, "resolve_thread_ids", return_value=[fx.ROOT_ID]), \
+        with patch.object(m, "resolve_thread_ids", return_value=([fx.ROOT_ID], "unrollnow")), \
                 patch.object(m, "fetch_tweet", side_effect=lambda t, tries=3: dict(tweets[t])), \
                 patch.object(m, "download"):
             env = m.harvest(fx.ROOT_ID, self.out, do_download=True, decode_sleep=0)
@@ -174,7 +189,7 @@ class TestHarvestEnvelope(HarvestHarness):
 
     def test_quoted_post_in_envelope(self):
         tweets = {fx.ROOT_ID: fx.fxtweet(quote=fx.quote_tweet())}
-        with patch.object(m, "resolve_thread_ids", return_value=[fx.ROOT_ID]), \
+        with patch.object(m, "resolve_thread_ids", return_value=([fx.ROOT_ID], "unrollnow")), \
                 patch.object(m, "fetch_tweet", side_effect=lambda t, tries=3: dict(tweets[t])), \
                 patch.object(m, "download"):
             env = m.harvest(fx.ROOT_ID, self.out, do_download=False, decode_sleep=0)

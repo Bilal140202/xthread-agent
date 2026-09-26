@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xthread-agent"
+version = "3.2.0"
+description = "Agentic X/Twitter thread content & media harvester for AI agents — no login, no API keys, no browser. MCP wrapper included."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [{ name = "Bilal140202" }]
+keywords = [
+  "twitter", "x", "thread", "threads", "agent", "ai-agents", "mcp",
+  "model-context-protocol", "scraper", "media-downloader", "archiver",
+  "cli", "harvester",
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Communications",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: System :: Archiving",
+  "Topic :: Utilities",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://bilal140202.github.io/xthread-agent/"
+Documentation = "https://github.com/Bilal140202/xthread-agent#readme"
+Repository = "https://github.com/Bilal140202/xthread-agent"
+Issues = "https://github.com/Bilal140202/xthread-agent/issues"
+Changelog = "https://github.com/Bilal140202/xthread-agent/blob/main/RELEASE_NOTES.md"
+
+[project.scripts]
+xthread-agent = "xthread_agent:main"
+
+[tool.setuptools]
+packages = ["xthread_agent"]

@@ -47,15 +47,20 @@ bare array to an envelope — see RELEASE_NOTES.md.)
 python3 xthread-agent.py "https://x.com/<user>/status/<status_id>" --out media/
 ```
 
-- Accepts a full URL **or** a bare numeric status ID.
+- Accepts a full URL, a bare numeric status ID, **or a t.co shortlink**
+  (resolved one hop, then validated — non-status destinations fail closed
+  with `E_INVALID_INPUT`).
 - Logs stream to **stderr** as the pipeline runs:
 
   ```
-  [ok ] thread walk: 11 candidate ids
+  [ok ] walker slot 'unrollnow': 11 candidate ids
   [skip] 2199999999999999999: not a tweet (media id or unavailable)
   [dl ] 2100632011572727818_v1.mp4  17.35 MB
   [done] 2 posts · 2 videos · 0 photos · 2 files -> media/thread_manifest.json
   ```
+
+  If the primary walker slot fails, the log names the fallback slot; the
+  envelope's `thread.walker_slot` records who served the walk.
 
 ### Agent-friendly run (machine parsing)
 

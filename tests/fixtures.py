@@ -137,6 +137,22 @@ def unrollnow_page(member_ids, noise_ids=(), root_id=None):
     return page
 
 
+def threadreader_page(member_ids, noise_ids=(), root_id=None):
+    """Build a ThreadReaderApp-shaped HTML page (the fallback walker slot)
+    embedding the given IDs as absolute /status/ links."""
+    links = "".join(
+        f'<a href="https://threadreaderapp.com/status/{i}">fixture</a>'
+        for i in list(member_ids) + list(noise_ids))
+    page = f"""<!DOCTYPE html>
+<html lang="en"><head><title>Thread by @fixtureuser</title></head>
+<body>
+{links}
+</body></html>"""
+    if root_id:
+        page += f'<link rel="canonical" href="https://threadreaderapp.com/thread/{root_id}">'
+    return page
+
+
 def vxtweet(tid=ROOT_ID):
     """A vxtwitter-shaped payload (fallback decoder slot)."""
     return {

@@ -1,3 +1,56 @@
+Metadata-Version: 2.4
+Name: xthread-agent
+Version: 3.2.0
+Summary: Agentic X/Twitter thread content & media harvester for AI agents — no login, no API keys, no browser. MCP wrapper included.
+Author: Bilal140202
+License: MIT License
+        
+        Copyright (c) 2026
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+        
+Project-URL: Homepage, https://bilal140202.github.io/xthread-agent/
+Project-URL: Documentation, https://github.com/Bilal140202/xthread-agent#readme
+Project-URL: Repository, https://github.com/Bilal140202/xthread-agent
+Project-URL: Issues, https://github.com/Bilal140202/xthread-agent/issues
+Project-URL: Changelog, https://github.com/Bilal140202/xthread-agent/blob/main/RELEASE_NOTES.md
+Keywords: twitter,x,thread,threads,agent,ai-agents,mcp,model-context-protocol,scraper,media-downloader,archiver,cli,harvester
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Topic :: Communications
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: System :: Archiving
+Classifier: Topic :: Utilities
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Dynamic: license-file
+
 # xthread-agent 🧵
 
 **An agentic X/Twitter thread content & media harvester for cloud-based AI agents.**
@@ -5,8 +58,6 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/Bilal140202/xthread-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/Bilal140202/xthread-agent/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/xthread-agent)](https://pypi.org/project/xthread-agent/)
-[![Docs](https://img.shields.io/badge/docs-bilal140202.github.io%2Fxthread--agent-8A63D2)](https://bilal140202.github.io/xthread-agent/)
 [![GitHub](https://img.shields.io/badge/GitHub-Bilal140202%2Fxthread--agent-black.svg)](https://github.com/Bilal140202/xthread-agent)
 [![stdlib only](https://img.shields.io/badge/dependencies-stdlib%20only-success.svg)](#requirements)
 
@@ -45,10 +96,9 @@ broken in specific, well-defined ways — this tool routes around all of them
 | `api.fxtwitter.com/status/<id>` | ✅ **Works** — full tweet JSON incl. multi-video "amplify" media |
 | **unrollnow.com/status/<id>** | ✅ **Works** — public thread walk; ⚠️ its pages also embed *recommendations*, which this tool filters out |
 
-**xthread-agent = Thread Walker (UnrollNow → ThreadReaderApp fallback) +
-Metadata Decoder (FixTweet, with vxtwitter fallback) + Thread Reconstructor
-(`replying_to_status` chain) + Media Fetcher (twimg CDN) — dual-homed where
-it matters, honest everywhere.**
+**xthread-agent = Thread Walker (UnrollNow) + Metadata Decoder (FixTweet, with
+vxtwitter fallback) + Thread Reconstructor (`replying_to_status` chain) +
+Media Fetcher (twimg CDN).**
 
 ---
 
@@ -60,15 +110,13 @@ status URL
    ▼
 ┌───────────────────────────────┐
 │ 0. NORMALIZE + VALIDATE       │  proper URL parsing (x.com / twitter.com,
-│    → bare status id           │  mobile/www hosts, /photo /video suffixes,
-└───────────────┬───────────────┘  t.co shortlinks resolved one hop)
+│    → bare status id           │  mobile/www hosts, /photo /video suffixes)
+└───────────────┬───────────────┘
                 ▼
 ┌───────────────────────────────┐
-│ 1. THREAD WALK (2 slots)      │  GET unrollnow.com/status/<root_id>
+│ 1. THREAD WALK                │  GET unrollnow.com/status/<root_id>
 │    regex-extract every        │  → ordered, deduped candidate IDs
-│    candidate ID               │    (ThreadReaderApp fallback slot;
-│                               │    root ALWAYS kept; capped at 50;
-│                               │    slot named in walker_slot)
+│    candidate ID               │    (root ALWAYS kept; capped at 50)
 └───────────────┬───────────────┘
                 ▼
 ┌───────────────────────────────┐
@@ -184,9 +232,6 @@ thread order, authors, timestamps, quoted posts, media URLs, local file paths,
 per-stage errors — lives in `thread_manifest.json`
 ([JSON Schema](schema/thread-result.schema.json)).
 
-New in v3.2: `thread.walker_slot` names the discovery slot that served the
-walk (`unrollnow`, `threadreaderapp`, or `none` when degraded to root-only).
-
 ---
 
 ## For AI agents
@@ -245,9 +290,7 @@ your MCP client config as a stdio command, e.g.
 | [`docs/endpoint-matrix.md`](docs/endpoint-matrix.md) | Living reference: every endpoint, its status, its failure signature |
 | [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) | Why this exists, design decisions, fragile parts — for future maintainers |
 | [`RELEASE_NOTES.md`](RELEASE_NOTES.md) | Version history |
-| [`PUBLISHING.md`](PUBLISHING.md) | The exact PyPI publishing checklist (Trusted Publishing) |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to contribute |
-| [Portfolio site](https://bilal140202.github.io/xthread-agent/) | This project's GitHub Pages home (source: `site/`) |
 
 ---
 
@@ -264,38 +307,21 @@ your MCP client config as a stdio command, e.g.
 ## Requirements
 
 - Python **3.9+** (the tool itself). Tests also run on stdlib `unittest`.
-- Outbound HTTPS to `unrollnow.com`, `threadreaderapp.com` (fallback walker),
-  `api.fxtwitter.com`, `api.vxtwitter.com` (fallback only), `t.co` (only for
-  shortlink inputs), `video.twimg.com`, `pbs.twimg.com`.
-
-## Install
-
-```bash
-# from PyPI (console script + module, same single-file core)
-pip install xthread-agent
-xthread-agent "https://x.com/<user>/status/<id>" --json --quiet
-
-# or the original zero-install way: curl one file and run it
-python3 xthread-agent.py "https://x.com/<user>/status/<id>"
-```
-
-The PyPI wheel carries `xthread_agent/__init__.py`, a byte-identical copy of
-`xthread-agent.py` enforced by a drift-guard test — the single-file design
-constraint (PROJECT_CONTEXT.md §5.1) is intact.
+- Outbound HTTPS to `unrollnow.com`, `api.fxtwitter.com`, `api.vxtwitter.com`
+  (fallback only), `video.twimg.com`, `pbs.twimg.com`.
 
 ---
 
 ## Testing
 
 ```bash
-python3 -m unittest discover -s tests -p "test_*.py" -v   # 135 offline tests, ~1s
+python3 -m unittest discover -s tests -p "test_*.py" -v   # 110 offline tests, ~1s
 ```
 
-The suite covers URL normalization (including t.co expansion), both walker
-slots, both decoders (including the vxtwitter fallback and HTTP
-404/451/429 paths), chain reconstruction, payload mapping, atomic downloads,
-the envelope contract, CLI behavior, the MCP wrapper (protocol framing,
-tools, error paths), and package/source sync — all against synthetic
+The suite covers URL normalization, the walker, both decoders (including the
+vxtwitter fallback and HTTP 404/451/429 paths), chain reconstruction, payload
+mapping, atomic downloads, the envelope contract, CLI behavior, and the MCP
+wrapper (protocol framing, tools, error paths) — all against synthetic
 fixtures (no network). CI (`.github/workflows/ci.yml`) runs the same suite on
 Python 3.9–3.13 on every push and PR; live endpoints are deliberately never
 probed from CI. For a real end-to-end run, use `demo.py` against any public

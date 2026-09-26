@@ -19,7 +19,7 @@ class TestCLI(unittest.TestCase):
     def test_version(self):
         r = run("--version")
         self.assertEqual(r.returncode, 0)
-        self.assertEqual(r.stdout.strip(), "3.1.0")
+        self.assertEqual(r.stdout.strip(), "3.2.0")
         self.assertEqual(r.stderr, "")
 
     def test_missing_argument_is_usage_error(self):

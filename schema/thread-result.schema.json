@@ -50,7 +50,12 @@
         "related_filtered": { "type": "integer", "minimum": 0, "description": "decoded tweets excluded because they are not part of the self-reply chain" },
         "ancestors_fetched": { "type": "integer", "minimum": 0 },
         "chain_reconstructed": { "type": "boolean" },
-        "degraded_to_root_only": { "type": "boolean" }
+        "degraded_to_root_only": { "type": "boolean" },
+        "walker_slot": {
+          "type": "string",
+          "enum": ["unrollnow", "threadreaderapp", "none"],
+          "description": "which walker slot served the candidate walk ('none' = every slot failed or the walk was not reached); absent in manifests produced before v3.2.0"
+        }
       }
     },
     "posts": { "type": "array", "items": { "$ref": "#/definitions/post" } },

@@ -2,9 +2,12 @@ __pycache__/
 *.pyc
 media/
 demo_output/
+dist/
 *.part
 *.mp4
 *.jpg
 !docs/**
 !tests/**
 !schema/**
+!site/**
+!site/assets/**

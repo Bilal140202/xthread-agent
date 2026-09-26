@@ -1,0 +1,39 @@
+# GitHub Pages deployment for the xthread-agent portfolio site.
+#
+# Source of truth: the site/ directory on main. Deployed via the official
+# Pages actions (no gh-pages branch, no Jekyll). Requires Pages to be
+# enabled once with Build type = "GitHub Actions"
+# (repo Settings → Pages, or POST /repos/{owner}/{repo}/pages).
+
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ["site/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy portfolio site
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4

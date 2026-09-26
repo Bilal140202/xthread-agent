@@ -1,0 +1,58 @@
+name: 🐛 Bug report
+description: Report something that broke, misreported, or behaved dishonestly.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report! Please include **your own test URLs** (or bare
+        IDs) — never content you don't have the right to share. The envelope's
+        `errors[]` array and `thread.walker_slot` field are gold for debugging.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `python3 xthread-agent.py --version`
+      placeholder: 3.2.0
+    validations:
+      required: true
+  - type: dropdown
+    id: invocation
+    attributes:
+      label: How was it invoked?
+      options:
+        - CLI (direct)
+        - MCP server (extract_thread / lookup_status)
+        - demo.py
+        - As a Python module (import / pip install)
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which stage failed?
+      options:
+        - Input normalization / t.co resolution
+        - Thread walk (walker slots)
+        - Decode (metadata)
+        - Thread reconstruction
+        - Media download
+        - Manifest / envelope shape
+        - MCP wrapper
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened, and what did you expect?
+      description: Paste the JSON summary or the relevant `errors[]` entries.
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      label: Sanity checks
+      options:
+        - label: The post is public and available on x.com
+        - label: The offline test suite passes on my machine
+          required: false

@@ -1,0 +1,28 @@
+name: ✨ Feature request
+description: Suggest an improvement — slots and contracts are the right place to propose.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What can an agent not do today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: |
+        Note the project's slot architecture: discovery/decode/deliver are
+        replaceable slots behind narrow contracts. Proposals that add a
+        *slot* are preferred over proposals that restructure the pipeline.
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      label: Constraints (non-negotiable — see README)
+      options:
+        - label: Requires no login, no cookies, no browser, no API keys
+        - label: Keeps the tool stdlib-only (or justifies an exception)
+        - label: Fail-closed honesty preserved (no fabricated data, ever)
