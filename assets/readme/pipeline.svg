@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" role="img" aria-labelledby="t">
+  <title id="t">xthread-agent pipeline: normalize, thread walk, decode, reconstruct, deliver</title>
+  <defs>
+    <radialGradient id="pglow" cx="0.5" cy="0.2" r="0.55">
+      <stop offset="0" stop-color="#3b2f6e" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#3b2f6e" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="pframe">
+      <rect x="1" y="1" width="1198" height="428" rx="26"/>
+    </clipPath>
+  </defs>
+
+  <rect x="1" y="1" width="1198" height="428" rx="26" fill="#121218"/>
+  <g clip-path="url(#pframe)">
+    <rect x="1" y="1" width="1198" height="428" fill="url(#pglow)"/>
+  </g>
+  <rect x="1" y="1" width="1198" height="428" rx="26" fill="none" stroke="#34343c" stroke-width="1.5"/>
+
+  <!-- arrows -->
+  <g stroke="#8a7fb8" stroke-width="2.5" fill="#8a7fb8">
+    <line x1="248" y1="206" x2="260" y2="206"/><path d="M261 200.5 L269.5 206 L261 211.5 Z" stroke="none"/>
+    <line x1="477" y1="206" x2="489" y2="206"/><path d="M490 200.5 L498.5 206 L490 211.5 Z" stroke="none"/>
+    <line x1="706" y1="206" x2="718" y2="206"/><path d="M719 200.5 L727.5 206 L719 211.5 Z" stroke="none"/>
+    <line x1="935" y1="206" x2="947" y2="206"/><path d="M948 200.5 L956.5 206 L948 211.5 Z" stroke="none"/>
+  </g>
+
+  <!-- shared card style -->
+  <g font-family="Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif">
+    <!-- card 1 -->
+    <rect x="40" y="96" width="204" height="220" rx="16" fill="#1e1e26" stroke="#34343c"/>
+    <circle cx="218" cy="126" r="13" fill="#2a2150" stroke="#8a7fb8"/>
+    <text x="218" y="131" font-size="13" font-weight="700" fill="#e6ddff" text-anchor="middle">0</text>
+    <text x="56" y="131" font-size="12.5" font-weight="600" letter-spacing="1.5" fill="#b7a8e0">0 · INPUT</text>
+    <text x="56" y="164" font-size="22" font-weight="700" fill="#e5e1e9">Normalize</text>
+    <line x1="56" y1="180" x2="228" y2="180" stroke="#34343c"/>
+    <text x="56" y="206" font-size="14" fill="#c7c5d0">
+      <tspan x="56" dy="0">x.com · twitter.com ·</tspan>
+      <tspan x="56" dy="22">mobile hosts · bare IDs</tspan>
+      <tspan x="56" dy="22">t.co shortlinks —</tspan>
+      <tspan x="56" dy="22">24 input forms</tspan>
+    </text>
+
+    <!-- card 2 -->
+    <rect x="269" y="96" width="204" height="220" rx="16" fill="#1e1e26" stroke="#34343c"/>
+    <circle cx="447" cy="126" r="13" fill="#2a2150" stroke="#8a7fb8"/>
+    <text x="447" y="131" font-size="13" font-weight="700" fill="#e6ddff" text-anchor="middle">1</text>
+    <text x="285" y="131" font-size="12.5" font-weight="600" letter-spacing="1.5" fill="#b7a8e0">1 · DISCOVERY</text>
+    <text x="285" y="164" font-size="22" font-weight="700" fill="#e5e1e9">Thread walk</text>
+    <line x1="285" y1="180" x2="457" y2="180" stroke="#34343c"/>
+    <text x="285" y="206" font-size="14" fill="#c7c5d0">
+      <tspan x="285" dy="0">UnrollNow primary,</tspan>
+      <tspan x="285" dy="22">ThreadReaderApp</tspan>
+      <tspan x="285" dy="22">fallback — candidate</tspan>
+      <tspan x="285" dy="22">IDs; root always kept</tspan>
+    </text>
+
+    <!-- card 3 -->
+    <rect x="498" y="96" width="204" height="220" rx="16" fill="#1e1e26" stroke="#34343c"/>
+    <circle cx="676" cy="126" r="13" fill="#2a2150" stroke="#8a7fb8"/>
+    <text x="676" y="131" font-size="13" font-weight="700" fill="#e6ddff" text-anchor="middle">2</text>
+    <text x="514" y="131" font-size="12.5" font-weight="600" letter-spacing="1.5" fill="#b7a8e0">2 · DECODE</text>
+    <text x="514" y="164" font-size="22" font-weight="700" fill="#e5e1e9">Decode</text>
+    <line x1="514" y1="180" x2="686" y2="180" stroke="#34343c"/>
+    <text x="514" y="206" font-size="14" fill="#c7c5d0">
+      <tspan x="514" dy="0">FixTweet primary,</tspan>
+      <tspan x="514" dy="22">vxtwitter fallback —</tspan>
+      <tspan x="514" dy="22">text, author, metrics,</tspan>
+      <tspan x="514" dy="22">media URLs, quotes</tspan>
+    </text>
+
+    <!-- card 4 -->
+    <rect x="727" y="96" width="204" height="220" rx="16" fill="#1e1e26" stroke="#34343c"/>
+    <circle cx="905" cy="126" r="13" fill="#2a2150" stroke="#8a7fb8"/>
+    <text x="905" y="131" font-size="13" font-weight="700" fill="#e6ddff" text-anchor="middle">3</text>
+    <text x="743" y="131" font-size="12.5" font-weight="600" letter-spacing="1.5" fill="#b7a8e0">3 · RECONSTRUCT</text>
+    <text x="743" y="164" font-size="22" font-weight="700" fill="#e5e1e9">Reconstruct</text>
+    <line x1="743" y1="180" x2="915" y2="180" stroke="#34343c"/>
+    <text x="743" y="206" font-size="14" fill="#c7c5d0">
+      <tspan x="743" dy="0">true self-reply chain</tspan>
+      <tspan x="743" dy="22">from <tspan font-family="'Roboto Mono', ui-monospace, Menlo, Consolas, monospace" font-size="12.5">replying_to_status</tspan></tspan>
+      <tspan x="743" dy="22">recommendations</tspan>
+      <tspan x="743" dy="22">filtered out</tspan>
+    </text>
+
+    <!-- card 5 -->
+    <rect x="956" y="96" width="204" height="220" rx="16" fill="#1e1e26" stroke="#34343c"/>
+    <circle cx="1134" cy="126" r="13" fill="#2a2150" stroke="#8a7fb8"/>
+    <text x="1134" y="131" font-size="13" font-weight="700" fill="#e6ddff" text-anchor="middle">4</text>
+    <text x="972" y="131" font-size="12.5" font-weight="600" letter-spacing="1.5" fill="#b7a8e0">4 · DELIVERY</text>
+    <text x="972" y="164" font-size="22" font-weight="700" fill="#e5e1e9">Deliver</text>
+    <line x1="972" y1="180" x2="1144" y2="180" stroke="#34343c"/>
+    <text x="972" y="206" font-size="14" fill="#c7c5d0">
+      <tspan x="972" dy="0"><tspan font-family="'Roboto Mono', ui-monospace, Menlo, Consolas, monospace" font-size="12.5">thread_manifest.json</tspan></tspan>
+      <tspan x="972" dy="22">+ media from twimg</tspan>
+      <tspan x="972" dy="22">CDN — atomic writes,</tspan>
+      <tspan x="972" dy="22">size-verified</tspan>
+    </text>
+  </g>
+
+  <!-- honesty strip -->
+  <text x="600" y="374" font-family="'Roboto Mono', ui-monospace, Menlo, Consolas, monospace" font-size="15" fill="#9b94b8" text-anchor="middle">fail-closed · stable error codes at every stage · twimg-CDN allowlist · 429 backoff · schema 3.0</text>
+</svg>

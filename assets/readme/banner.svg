@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-labelledby="t">
+  <title id="t">xthread-agent — public X/Twitter threads as machine-readable JSON, no login required</title>
+  <defs>
+    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.62">
+      <stop offset="0" stop-color="#3b2f6e" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#3b2f6e" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="iconGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3b2f6e"/>
+      <stop offset="1" stop-color="#5d3c52"/>
+    </linearGradient>
+    <clipPath id="frame">
+      <rect x="1" y="1" width="1198" height="298" rx="26"/>
+    </clipPath>
+  </defs>
+
+  <rect x="1" y="1" width="1198" height="298" rx="26" fill="#121218"/>
+  <g clip-path="url(#frame)">
+    <rect x="1" y="1" width="1198" height="298" fill="url(#glow)"/>
+    <!-- oversized thread watermark, right side -->
+    <g transform="translate(812,26) scale(6.2)" fill="none" stroke="#cfc4ff" stroke-opacity="0.09" stroke-width="1.7" stroke-linecap="round">
+      <path d="M14 20h20a7 7 0 0 1 7 7v0a7 7 0 0 1-7 7H22"/>
+      <path d="M22 34h20a7 7 0 0 1 7 7v0a7 7 0 0 1-7 7H18"/>
+    </g>
+    <circle cx="899" cy="150" r="24" fill="#e6bad7" fill-opacity="0.10"/>
+  </g>
+  <rect x="1" y="1" width="1198" height="298" rx="26" fill="none" stroke="#34343c" stroke-width="1.5"/>
+
+  <!-- icon block -->
+  <g transform="translate(84,104) scale(1.4375)">
+    <rect width="64" height="64" rx="18" fill="url(#iconGrad)"/>
+    <g fill="none" stroke="#e6ddff" stroke-width="5" stroke-linecap="round">
+      <path d="M14 20h20a7 7 0 0 1 7 7v0a7 7 0 0 1-7 7H22"/>
+      <path d="M22 34h20a7 7 0 0 1 7 7v0a7 7 0 0 1-7 7H18"/>
+    </g>
+    <circle cx="14" cy="20" r="3.6" fill="#e6bad7"/>
+  </g>
+
+  <!-- wordmark -->
+  <text x="212" y="136" font-family="Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="66" font-weight="800" fill="#e5e1e9">xthread<tspan fill="#cfc4ff">-agent</tspan></text>
+  <text x="214" y="182" font-family="Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="24" fill="#c7c5d0">Public X/Twitter threads → JSON and media. No login. No cookies.</text>
+
+  <!-- capability chips -->
+  <g font-family="Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="15" fill="#e6ddff" text-anchor="middle">
+    <rect x="212" y="222" width="176" height="34" rx="17" fill="#1e1e26" stroke="#34343c"/>
+    <text x="300" y="244">stdlib-only Python</text>
+    <rect x="402" y="222" width="176" height="34" rx="17" fill="#1e1e26" stroke="#34343c"/>
+    <text x="490" y="244">MCP server included</text>
+    <rect x="592" y="222" width="160" height="34" rx="17" fill="#1e1e26" stroke="#34343c"/>
+    <text x="672" y="244">135 offline tests</text>
+  </g>
+</svg>

@@ -1,28 +1,34 @@
-# xthread-agent 🧵
+<div align="center">
 
-**An agentic X/Twitter thread content & media harvester for cloud-based AI agents.**
+<img src="assets/readme/banner.svg" width="820" alt="xthread-agent — public X/Twitter threads as machine-readable JSON, no login required">
 
-[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+**No-login access to public X/Twitter threads — built for AI agents.**
+
+Give it any public status URL; it returns the reconstructed thread (posts,
+authors, timestamps, quoted posts), every photo and video as files on disk,
+and a machine-readable manifest. No login. No API keys. No browser.
+Deterministic, stdlib-only Python.
+
 [![CI](https://github.com/Bilal140202/xthread-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/Bilal140202/xthread-agent/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/xthread-agent)](https://pypi.org/project/xthread-agent/)
-[![Docs](https://img.shields.io/badge/docs-bilal140202.github.io%2Fxthread--agent-8A63D2)](https://bilal140202.github.io/xthread-agent/)
-[![GitHub](https://img.shields.io/badge/GitHub-Bilal140202%2Fxthread--agent-black.svg)](https://github.com/Bilal140202/xthread-agent)
-[![stdlib only](https://img.shields.io/badge/dependencies-stdlib%20only-success.svg)](#requirements)
-
-`xthread-agent` is a deterministic, single-file CLI agent built specifically for
-cloud-based AI agents and headless environments. Give it any public X status URL
-and it returns the reconstructed thread (posts, authors, timestamps, quoted
-posts), every video and photo in the thread as files on disk, plus an enveloped
-machine-readable manifest. No login. No API keys. No browser. No cookies.
-
-**One goal:** the calling agent gives us an X status URL; we return the thread's
-content and media, on disk, with a machine-readable manifest. Everything else is
-implementation.
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-8A63D2?style=flat-square)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-8A63D2?style=flat-square)](LICENSE)
+[![dependencies: stdlib only](https://img.shields.io/badge/dependencies-stdlib%20only-2da44e?style=flat-square)](#requirements)
+[![tests: 135 passing](https://img.shields.io/badge/tests-135%20passing-2da44e?style=flat-square)](#testing)
+[![Docs](https://img.shields.io/badge/docs-bilal140202.github.io%2Fxthread--agent-8A63D2?style=flat-square)](https://bilal140202.github.io/xthread-agent/)
+[![MCP](https://img.shields.io/badge/MCP-stdio%20server-5b45b1?style=flat-square)](#mcp-server-model-context-protocol)
+[![GitHub stars](https://img.shields.io/github/stars/Bilal140202/xthread-agent?style=social)](https://github.com/Bilal140202/xthread-agent/stargazers)
 
 ```bash
 python3 xthread-agent.py "https://x.com/<user>/status/<status_id>" --out media/
 ```
+
+[Website](https://bilal140202.github.io/xthread-agent/) ·
+[Why it exists](#why-this-exists) ·
+[For AI agents](#for-ai-agents) ·
+[Endpoint matrix](docs/endpoint-matrix.md) ·
+[Releases](https://github.com/Bilal140202/xthread-agent/releases)
+
+</div>
 
 ---
 
@@ -49,6 +55,69 @@ broken in specific, well-defined ways — this tool routes around all of them
 Metadata Decoder (FixTweet, with vxtwitter fallback) + Thread Reconstructor
 (`replying_to_status` chain) + Media Fetcher (twimg CDN) — dual-homed where
 it matters, honest everywhere.**
+
+---
+
+## What you get
+
+<p align="center">
+  <img src="assets/readme/pipeline.svg" width="860"
+       alt="Five-stage pipeline: normalize any input form; walk the thread (UnrollNow with ThreadReaderApp fallback); decode each post (FixTweet with vxtwitter fallback); reconstruct the true self-reply chain and filter recommendations; deliver thread_manifest.json plus verified media from the twimg CDN.">
+</p>
+
+The deliverable is a versioned envelope — `thread_manifest.json` — validated
+against a bundled [draft-07 JSON Schema](schema/thread-result.schema.json),
+next to the downloaded media. Illustrative excerpt (the schema is the
+contract):
+
+```json
+{
+  "schema_version": "3.0",
+  "source":   { "tool": "xthread-agent", "version": "3.2.0", "generated_at": "…" },
+  "request":  { "input": "https://x.com/jack/status/20", "status_id": "20",
+                "canonical_url": "https://x.com/i/web/status/20" },
+  "status": "ok",
+  "thread": {
+    "root_status_id": "20", "tweet_count": 1,
+    "walker_slot": "unrollnow",
+    "chain_reconstructed": true, "degraded_to_root_only": false
+  },
+  "posts": [
+    {
+      "id": "20",
+      "url": "https://x.com/i/web/status/20",
+      "text": "just setting up my twttr",
+      "created_at_iso": "2006-03-21T20:50:14.000Z",
+      "author":  { "screen_name": "jack", "name": "jack", "followers": "…" },
+      "metrics": { "likes": "…", "retweets": "…", "views": "…" },
+      "media": {
+        "photos": [ { "url": "…pbs.twimg.com/…", "file": "20_p1.jpg", "downloaded": true } ],
+        "videos": []
+      },
+      "thread_position": 1
+    }
+  ],
+  "errors": [],
+  "metadata": { "duration_sec": "…" }
+}
+```
+
+`status` is `ok` (posts, no errors), `partial` (posts but something degraded —
+see `errors[]`), or `empty` (nothing harvested; fail-closed). Every degraded
+path names itself with a stable error code instead of guessing.
+
+### Numbers — verified, not promised
+
+| Verified | Value |
+|---|---|
+| Live endpoints re-verified | 2026-09-24, 3/3 — walker, both decoders, CDN ([matrix](docs/endpoint-matrix.md)) |
+| Redundancy | 2 walker slots + 2 decoder slots — dual-homed discovery and decode |
+| Input handling | 24 URL forms accepted, 10 rejected with stable codes (incl. t.co one-hop expansion) |
+| Offline tests | 135 in ~1 s — no network, synthetic fixtures only |
+| CI matrix | Python 3.9 – 3.13, every push |
+| Runtime dependencies | 0 — Python stdlib only |
+| Largest live-verified transfer | 167 MB 4K MP4 + poster — atomic write, `Content-Length`-verified |
+| Media actually verified live | JPEG photo (1455×980), 4K MP4, poster frames, real manifests |
 
 ---
 
@@ -271,13 +340,18 @@ your MCP client config as a stdio command, e.g.
 ## Install
 
 ```bash
+# zero-install: curl one file and run it (works today)
+python3 xthread-agent.py "https://x.com/<user>/status/<id>" --json --quiet
+
 # from PyPI (console script + module, same single-file core)
 pip install xthread-agent
 xthread-agent "https://x.com/<user>/status/<id>" --json --quiet
-
-# or the original zero-install way: curl one file and run it
-python3 xthread-agent.py "https://x.com/<user>/status/<id>"
 ```
+
+> **PyPI status:** the package is built, `twine check`-passed, and smoke-tested
+> locally; publication is pending one-time Trusted-Publisher configuration on
+> PyPI (owner action — [PUBLISHING.md](PUBLISHING.md) §1 has the exact steps).
+> Until then, the zero-install path above works with no installation at all.
 
 The PyPI wheel carries `xthread_agent/__init__.py`, a byte-identical copy of
 `xthread-agent.py` enforced by a drift-guard test — the single-file design
@@ -374,6 +448,57 @@ rights holders. Don't repost harvested media commercially. Don't use this tool
 to invade anyone's privacy — it only reaches public content that any visitor
 can see.
 
+---
+
+## FAQ
+
+**Does it really need no login?**
+It never presents credentials, cookies, session tokens, or a browser
+fingerprint, and never touches `x.com` itself. It reads three public surfaces:
+an unrolling service, two open link-decoder workers, and X's own media CDN.
+That works because X's auth wall guards *discovery* APIs while the CDN serves
+bytes to anyone holding a resolved URL. It does not mean X sanctions or
+guarantees this access.
+
+**Is this allowed by X's Terms of Service?**
+Reaching publicly accessible content through third-party surfaces may be
+subject to X's Terms of Service, the third parties' terms, copyright and
+data-protection law — your responsibility, your jurisdiction. The tool reaches
+only what any visitor can see, fails closed on protected content, and grants
+no license to harvested media. If you need guaranteed, sanctioned access, use
+the official X API.
+
+**What happens when an upstream service dies?**
+Nothing explodes: discovery is dual-homed (UnrollNow → ThreadReaderApp),
+decoding has a fallback slot (vxtwitter), and every failure lands in the
+envelope's `errors[]` with a stable code. Worst case is a root-only harvest or
+an honest `status: empty`. Slots are designed to be replaced behind their
+contracts.
+
+**Why does a retweet URL resolve to the original post?**
+The decoder returns the original tweet's payload for a retweet URL, so the
+harvested content is exactly what that URL publicly shows (the retweeted
+post). `posts[0].id` is the original post ID; `request.status_id` and
+`thread.root_status_id` stay the ID you asked about, so nothing is hidden.
+
+**Why stdlib-only Python?**
+Deployment story: copy one file into a bare sandbox and run it. No pip, no
+node, no ffmpeg — anywhere Python 3.9+ exists, the agent works. The PyPI
+package exists for convenience and is byte-identical to the single file,
+enforced by a drift-guard test.
+
+---
+
+## Star history
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Bilal140202/xthread-agent&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Bilal140202/xthread-agent&type=Date" />
+    <img alt="Star history chart for Bilal140202/xthread-agent" src="https://api.star-history.com/svg?repos=Bilal140202/xthread-agent&type=Date">
+  </picture>
+</p>
+
 ## License
 
 MIT. See [`LICENSE`](LICENSE).
@@ -387,5 +512,7 @@ MIT. See [`LICENSE`](LICENSE).
 
 ## Links
 
+- **Website:** https://bilal140202.github.io/xthread-agent/
 - **GitHub:** https://github.com/Bilal140202/xthread-agent
 - **Issues:** https://github.com/Bilal140202/xthread-agent/issues
+- **Releases:** https://github.com/Bilal140202/xthread-agent/releases

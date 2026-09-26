@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="t">
+  <title id="t">xthread-agent — public X/Twitter threads for AI agents, no login required</title>
+  <defs>
+    <radialGradient id="oglow" cx="0.42" cy="0.3" r="0.66">
+      <stop offset="0" stop-color="#3b2f6e" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#3b2f6e" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="oicon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3b2f6e"/>
+      <stop offset="1" stop-color="#5d3c52"/>
+    </linearGradient>
+    <clipPath id="oframe">
+      <rect x="1" y="1" width="1198" height="628" rx="30"/>
+    </clipPath>
+  </defs>
+
+  <rect x="1" y="1" width="1198" height="628" rx="30" fill="#0d0d12"/>
+  <g clip-path="url(#oframe)">
+    <rect x="1" y="1" width="1198" height="628" fill="url(#oglow)"/>
+    <g transform="translate(796,96) scale(6.4)" fill="none" stroke="#cfc4ff" stroke-opacity="0.10" stroke-width="1.7" stroke-linecap="round">
+      <path d="M14 20h20a7 7 0 0 1 7 7v0a7 7 0 0 1-7 7H22"/>
+      <path d="M22 34h20a7 7 0 0 1 7 7v0a7 7 0 0 1-7 7H18"/>
+    </g>
+    <circle cx="886" cy="248" r="26" fill="#e6bad7" fill-opacity="0.12"/>
+  </g>
+  <rect x="1" y="1" width="1198" height="628" rx="30" fill="none" stroke="#34343c" stroke-width="1.5"/>
+
+  <!-- icon block -->
+  <g transform="translate(96,128) scale(2.06)">
+    <rect width="64" height="64" rx="18" fill="url(#oicon)"/>
+    <g fill="none" stroke="#e6ddff" stroke-width="5" stroke-linecap="round">
+      <path d="M14 20h20a7 7 0 0 1 7 7v0a7 7 0 0 1-7 7H22"/>
+      <path d="M22 34h20a7 7 0 0 1 7 7v0a7 7 0 0 1-7 7H18"/>
+    </g>
+    <circle cx="14" cy="20" r="3.6" fill="#e6bad7"/>
+  </g>
+
+  <!-- wordmark -->
+  <text x="268" y="196" font-family="Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="88" font-weight="800" fill="#e5e1e9">xthread<tspan fill="#cfc4ff">-agent</tspan></text>
+  <text x="272" y="252" font-family="Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="30" fill="#c7c5d0">Public X/Twitter threads → JSON and media. No login. No cookies.</text>
+
+  <!-- capability chips -->
+  <g font-family="Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="19" fill="#e6ddff" text-anchor="middle">
+    <rect x="270" y="296" width="210" height="42" rx="21" fill="#1e1e26" stroke="#34343c"/>
+    <text x="375" y="323">stdlib-only Python</text>
+    <rect x="496" y="296" width="220" height="42" rx="21" fill="#1e1e26" stroke="#34343c"/>
+    <text x="606" y="323">MCP server included</text>
+    <rect x="732" y="296" width="248" height="42" rx="21" fill="#1e1e26" stroke="#34343c"/>
+    <text x="856" y="323">no login · no API keys</text>
+  </g>
+
+  <!-- terminal line -->
+  <g>
+    <rect x="96" y="420" width="760" height="66" rx="16" fill="#1a1a21" stroke="#34343c"/>
+    <circle cx="124" cy="453" r="5" fill="#e6bad7"/>
+    <text x="144" y="461" font-family="'Roboto Mono', ui-monospace, Menlo, Consolas, monospace" font-size="21" fill="#e6ddff">python3 xthread-agent.py "https://x.com/<tspan fill="#cfc4ff">user</tspan>/status/<tspan fill="#e6bad7">id</tspan>"</text>
+  </g>
+
+  <text x="96" y="560" font-family="'Roboto Mono', ui-monospace, Menlo, Consolas, monospace" font-size="19" fill="#9b94b8">github.com/Bilal140202/xthread-agent</text>
+  <text x="1104" y="560" font-family="'Roboto Mono', ui-monospace, Menlo, Consolas, monospace" font-size="19" fill="#9b94b8" text-anchor="end">MIT</text>
+</svg>
