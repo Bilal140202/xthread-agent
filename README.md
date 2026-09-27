@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/readme/banner.svg" width="820" alt="xthread-agent — public X/Twitter threads as machine-readable JSON, no login required">
+<img src="https://raw.githubusercontent.com/Bilal140202/xthread-agent/main/assets/readme/banner.svg" width="820" alt="xthread-agent — public X/Twitter threads as machine-readable JSON, no login required">
 
 **No-login access to public X/Twitter threads — built for AI agents.**
 
@@ -61,7 +61,7 @@ it matters, honest everywhere.**
 ## What you get
 
 <p align="center">
-  <img src="assets/readme/pipeline.svg" width="860"
+  <img src="https://raw.githubusercontent.com/Bilal140202/xthread-agent/main/assets/readme/pipeline.svg" width="860"
        alt="Five-stage pipeline: normalize any input form; walk the thread (UnrollNow with ThreadReaderApp fallback); decode each post (FixTweet with vxtwitter fallback); reconstruct the true self-reply chain and filter recommendations; deliver thread_manifest.json plus verified media from the twimg CDN.">
 </p>
 
