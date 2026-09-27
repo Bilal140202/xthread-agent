@@ -3,13 +3,11 @@
 # Triggered by pushing a v* tag. Deterministic and offline (the test job
 # never touches live endpoints, same politeness constraint as CI).
 #
-# PyPI publishing uses Trusted Publishing (OIDC) — no tokens stored in the
-# repo. One-time setup (repo owner): on pypi.org → project "xthread-agent"
-# (or the "pending publisher" placeholder) → Add a pending publisher:
-#   owner: Bilal140202   repository: xthread-agent   workflow: release.yml
-#   environment: pypi
-# Until that exists, the publish job fails harmlessly after the artifacts
-# are attached to the GitHub Release. See PUBLISHING.md for the checklist.
+# PyPI publishing uses an API token stored as the repo secret PYPI_API_TOKEN
+# (set 2026-09-27; first publication xthread-agent 3.2.0 succeeded the same
+# day). If the token is ever revoked, either replace the secret with a fresh
+# token (pypi.org → account → API tokens) or switch this job back to Trusted
+# Publishing (OIDC) — see PUBLISHING.md for both paths.
 
 name: Release
 
@@ -20,7 +18,6 @@ on:
 
 permissions:
   contents: write        # attach artifacts to the GitHub Release
-  id-token: write        # Trusted Publishing (PyPI OIDC)
 
 jobs:
   test:
@@ -81,7 +78,7 @@ jobs:
           body_path: RELEASE_NOTES.md
 
   publish-pypi:
-    name: Publish to PyPI (Trusted Publishing)
+    name: Publish to PyPI
     needs: build
     runs-on: ubuntu-latest
     environment:
@@ -94,3 +91,6 @@ jobs:
           path: dist
       - name: Publish
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}

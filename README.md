@@ -10,6 +10,7 @@ and a machine-readable manifest. No login. No API keys. No browser.
 Deterministic, stdlib-only Python.
 
 [![CI](https://github.com/Bilal140202/xthread-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/Bilal140202/xthread-agent/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/xthread-agent?style=flat-square)](https://pypi.org/project/xthread-agent/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-8A63D2?style=flat-square)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-8A63D2?style=flat-square)](LICENSE)
 [![dependencies: stdlib only](https://img.shields.io/badge/dependencies-stdlib%20only-2da44e?style=flat-square)](#requirements)
@@ -340,22 +341,19 @@ your MCP client config as a stdio command, e.g.
 ## Install
 
 ```bash
-# zero-install: curl one file and run it (works today)
-python3 xthread-agent.py "https://x.com/<user>/status/<id>" --json --quiet
-
-# from PyPI (console script + module, same single-file core)
+# from PyPI (recommended — console script + importable module, zero deps)
 pip install xthread-agent
 xthread-agent "https://x.com/<user>/status/<id>" --json --quiet
+
+# or the original zero-install way: one file, nothing to install
+python3 xthread-agent.py "https://x.com/<user>/status/<id>" --json --quiet
 ```
 
-> **PyPI status:** the package is built, `twine check`-passed, and smoke-tested
-> locally; publication is pending one-time Trusted-Publisher configuration on
-> PyPI (owner action — [PUBLISHING.md](PUBLISHING.md) §1 has the exact steps).
-> Until then, the zero-install path above works with no installation at all.
-
-The PyPI wheel carries `xthread_agent/__init__.py`, a byte-identical copy of
-`xthread-agent.py` enforced by a drift-guard test — the single-file design
-constraint (PROJECT_CONTEXT.md §5.1) is intact.
+Live on PyPI since 2026-09-27 (`xthread-agent 3.2.0`): the wheel carries
+`xthread_agent/__init__.py`, a byte-identical copy of `xthread-agent.py`
+enforced by a drift-guard test — the single-file design constraint
+(PROJECT_CONTEXT.md §5.1) is intact. Future releases publish automatically
+when a `v*` tag is pushed (test → build → smoke → GitHub Release → PyPI).
 
 ---
 

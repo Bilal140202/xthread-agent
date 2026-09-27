@@ -11,3 +11,8 @@ dist/
 !schema/**
 !site/**
 !site/assets/**
+
+# build artifacts
+*.egg-info/
+dist/
+build/

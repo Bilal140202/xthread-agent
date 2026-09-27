@@ -7,6 +7,11 @@ accepted, and the project ships as a PyPI package with a portfolio site.
 The reconstruction truth layer is untouched — `replying_to_status` remains
 the only chain signal, and no existing field changed meaning.
 
+> **2026-09-27: first PyPI publication.** `xthread-agent 3.2.0` (sdist +
+> wheel) is live at <https://pypi.org/project/xthread-agent/>. The release
+> workflow now publishes automatically from the repo secret
+> `PYPI_API_TOKEN`; see PUBLISHING.md for the rotation path.
+
 ### Added
 
 - **Second walker slot (dual-homed discovery).** `resolve_thread_ids` now
